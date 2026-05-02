@@ -1,25 +1,27 @@
 import Link from "next/link";
 import { Trip, TripMember } from "@/lib/types";
 import { formatDateRange, initials } from "@/lib/utils";
+import { DeleteTripButton } from "@/components/trip/DeleteTripButton";
 
 interface Props {
   trip: Trip & { members?: (TripMember & { profile?: { full_name: string } })[] };
+  canDelete?: boolean;
 }
 
-export function TripCard({ trip }: Props) {
+export function TripCard({ trip, canDelete = false }: Props) {
   const memberNames = trip.members?.map(m => m.profile?.full_name || "?") || [];
 
   return (
-    <Link href={`/trips/${trip.id}`}>
-      <div className="card overflow-hidden cursor-pointer group">
-        {/* Color accent bar */}
-        <div
-          className="h-1.5"
-          style={{ background: `linear-gradient(90deg, ${trip.color}, ${trip.color}aa)` }}
-        />
+    <div className="card overflow-hidden group">
+      {/* Color accent bar */}
+      <div
+        className="h-1.5"
+        style={{ background: `linear-gradient(90deg, ${trip.color}, ${trip.color}aa)` }}
+      />
 
-        <div className="p-6">
-          <div className="flex justify-between items-start">
+      <div className="p-6">
+        <div className="flex justify-between items-start gap-4">
+          <Link href={`/trips/${trip.id}`} className="min-w-0 flex-1">
             <div className="flex gap-4 items-center">
               <div
                 className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl"
@@ -34,11 +36,17 @@ export function TripCard({ trip }: Props) {
                 <p className="text-sm text-sand-400">{trip.destination}</p>
               </div>
             </div>
-            <span className="font-mono text-xs text-sand-400 bg-sand-50 px-3 py-1.5 rounded-lg">
+          </Link>
+
+          <div className="flex flex-col items-end gap-2">
+            <span className="font-mono text-xs text-sand-400 bg-sand-50 px-3 py-1.5 rounded-lg whitespace-nowrap">
               {formatDateRange(trip.start_date, trip.end_date)}
             </span>
+            {canDelete && <DeleteTripButton tripId={trip.id} tripName={trip.name} />}
           </div>
+        </div>
 
+        <Link href={`/trips/${trip.id}`} className="block">
           <div className="flex items-center gap-3 mt-4">
             {/* Member avatars */}
             <div className="flex -space-x-2">
@@ -61,8 +69,8 @@ export function TripCard({ trip }: Props) {
               {memberNames.length} traveler{memberNames.length !== 1 ? "s" : ""}
             </span>
           </div>
-        </div>
+        </Link>
       </div>
-    </Link>
+    </div>
   );
 }
