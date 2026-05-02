@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>TRVL Integrated 3-Hour Implementation Plan</title>
+  <style>
+    @page {
+      size: Letter;
+      margin: 0.55in;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: #17202a;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      font-size: 10.5px;
+      line-height: 1.35;
+      background: #ffffff;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      color: #102233;
+      line-height: 1.1;
+    }
+
+    h1 {
+      font-size: 29px;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin-top: 20px;
+      padding-top: 11px;
+      border-top: 2px solid #dde8ef;
+      font-size: 17px;
+    }
+
+    h3 {
+      margin-top: 12px;
+      font-size: 12px;
+    }
+
+    p {
+      margin: 6px 0;
+    }
+
+    ul, ol {
+      margin: 6px 0 8px 18px;
+      padding: 0;
+    }
+
+    li {
+      margin: 3px 0;
+    }
+
+    code {
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: #edf3f6;
+      color: #0e4a66;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 9.5px;
+    }
+
+    pre {
+      margin: 8px 0;
+      padding: 9px 10px;
+      border: 1px solid #d6e4eb;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f6fafc;
+      color: #0d2b3d;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 8.7px;
+      line-height: 1.28;
+      white-space: pre-wrap;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0 10px;
+      table-layout: fixed;
+    }
+
+    th, td {
+      vertical-align: top;
+      padding: 6px 7px;
+      border: 1px solid #d9e5ec;
+      text-align: left;
+    }
+
+    th {
+      background: #eaf2f6;
+      color: #102233;
+      font-weight: 700;
+    }
+
+    .cover {
+      display: grid;
+      grid-template-columns: 1.35fr 0.9fr;
+      gap: 18px;
+      padding: 18px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #edf8fb 0%, #f8fbf7 48%, #fff4ef 100%);
+      border: 1px solid #d7e7ed;
+    }
+
+    .kicker {
+      margin-bottom: 8px;
+      color: #296075;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: #40515c;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .meta {
+      display: grid;
+      gap: 7px;
+      padding: 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid #dce8ee;
+    }
+
+    .meta div {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid #e7eef2;
+      padding-bottom: 5px;
+    }
+
+    .meta div:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .label {
+      color: #536774;
+      font-weight: 700;
+    }
+
+    .value {
+      color: #102233;
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .callout {
+      margin: 10px 0;
+      padding: 10px 12px;
+      border-left: 4px solid #2e6f86;
+      border-radius: 8px;
+      background: #f1f8fa;
+    }
+
+    .warning {
+      border-left-color: #b86d2c;
+      background: #fff8ef;
+    }
+
+    .success {
+      border-left-color: #4b8a59;
+      background: #f3fbf4;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .card {
+      padding: 10px;
+      border: 1px solid #d9e5ec;
+      border-radius: 10px;
+      background: #ffffff;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      margin-bottom: 6px;
+    }
+
+    .small {
+      color: #566a76;
+      font-size: 9.4px;
+    }
+
+    .tag {
+      display: inline-block;
+      margin: 0 3px 3px 0;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #edf3f6;
+      color: #17475a;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    .nowrap {
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <div>
+      <div class="kicker">TRVL sprint plan</div>
+      <h1>Integrated 3-Hour Implementation Plan</h1>
+      <p class="subtitle">
+        A focused plan for a team of 3 to turn the current TRVL app into a smarter,
+        data-driven travel planner with OAuth email import, smarter upload parsing,
+        and a trip-specific agent that proposes schedule changes.
+      </p>
+    </div>
+    <div class="meta">
+      <div><span class="label">Team size</span><span class="value">3 people</span></div>
+      <div><span class="label">Time budget</span><span class="value">3 hours each</span></div>
+      <div><span class="label">Total effort</span><span class="value">9 engineer-hours</span></div>
+      <div><span class="label">Target</span><span class="value">Deployable MVP demo</span></div>
+      <div><span class="label">Main rule</span><span class="value">Review before save</span></div>
+    </div>
+  </section>
+
+  <div class="callout">
+    <strong>Implementation principle:</strong> OAuth emails, uploaded files, pasted text,
+    and the trip agent should never write directly to the itinerary. They all create
+    <code>ProposedTripChange</code> records first. Users review, edit, approve, and then
+    TRVL saves the final itinerary items.
+  </div>
+
+  <h2>1. Current App Baseline</h2>
+  <p>
+    The current app already has the right foundations: Next.js App Router, Supabase auth
+    and RLS, trip members, itinerary items, expenses, shared links, and an AI email import
+    route. The main issue is integration shape: <code>app/api/ai/import-email/route.ts</code>
+    currently parses pasted text and inserts itinerary items immediately. For the new feature
+    set, that direct write should become a proposal workflow.
+  </p>
+
+  <table>
+    <tr>
+      <th style="width: 28%;">Existing piece</th>
+      <th style="width: 36%;">Use it for</th>
+      <th>Change needed</th>
+    </tr>
+    <tr>
+      <td><code>SmartImportPanel.tsx</code></td>
+      <td>Entry point for paste/import UI</td>
+      <td>Turn into tabbed import surface: Email, Upload, Paste</td>
+    </tr>
+    <tr>
+      <td><code>import-email/route.ts</code></td>
+      <td>AI extraction baseline</td>
+      <td>Return proposals instead of directly inserting items</td>
+    </tr>
+    <tr>
+      <td><code>itinerary_items</code></td>
+      <td>Final approved calendar/trip data</td>
+      <td>Add source fields later; do not use as staging table</td>
+    </tr>
+    <tr>
+      <td><code>lib/types.ts</code></td>
+      <td>Shared contract</td>
+      <td>Add proposal, import job, connected account, and preferences types</td>
+    </tr>
+  </table>
+
+  <h2>2. MVP Scope For 3 Hours Each</h2>
+  <div class="grid-3">
+    <div class="card">
+      <h3>Must Ship</h3>
+      <ul>
+        <li>Shared proposal type</li>
+        <li>Import review UI</li>
+        <li>Upload route for PDF/image/text/HTML</li>
+        <li>Gmail OAuth skeleton or working Gmail if env is ready</li>
+        <li>Trip agent that proposes changes</li>
+        <li>Approve proposals into existing itinerary items</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Nice If Time</h3>
+      <ul>
+        <li>Outlook OAuth provider</li>
+        <li>Duplicate detection</li>
+        <li>Import history list</li>
+        <li>Confidence badges</li>
+        <li>Conflict warnings for overlaps</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Explicitly Defer</h3>
+      <ul>
+        <li>Background inbox scanning</li>
+        <li>Gmail push notifications</li>
+        <li>Automatic schedule mutation</li>
+        <li>Multi-provider production verification</li>
+        <li>Long-term raw email storage</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="warning callout">
+    <strong>OAuth reality check:</strong> Gmail message-body access uses restricted Gmail
+    scopes. For a 3-hour sprint, build user-selected import and a clean provider interface.
+    Do not promise always-on mailbox monitoring. Google verification and security review can
+    matter before public launch. Microsoft delegated <code>Mail.Read</code> is simpler for
+    prototypes, but still needs clear consent and a disconnect flow.
+  </div>
+
+  <h2>3. Shared Contract</h2>
+  <p>
+    This contract is the integration center. Every feature returns this same shape, so the
+    review UI and approval API do not care whether the source was Gmail, Outlook, PDF,
+    screenshot, pasted text, or the trip agent.
+  </p>
+
+  <pre>export type ProposalSource = "gmail" | "outlook" | "upload" | "paste" | "agent";
+
+export type ProposedTripChange = {
+  id?: string;
+  trip_id: string;
+  source: ProposalSource;
+  source_ref?: string | null;
+  type: "flight" | "hotel" | "transport" | "activity" | "restaurant";
+  title: string;
+  detail?: string | null;
+  day_date?: string | null;
+  time?: string | null;
+  end_time?: string | null;
+  location_name?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  booking_ref?: string | null;
+  booking_url?: string | null;
+  cost?: number;
+  currency?: string;
+  notes?: string | null;
+  confidence: number;
+  warnings: string[];
+  action: "create" | "update" | "move" | "delete";
+  target_item_id?: string | null;
+};</pre>
+
+  <h2>4. Database Additions</h2>
+  <p>
+    Keep the current <code>itinerary_items</code> table as final approved data. Add staging
+    and memory tables for imports and the agent.
+  </p>
+
+  <table>
+    <tr>
+      <th style="width: 22%;">Table</th>
+      <th>Purpose</th>
+      <th style="width: 34%;">Key fields</th>
+    </tr>
+    <tr>
+      <td><code>connected_accounts</code></td>
+      <td>Stores user OAuth providers and encrypted tokens.</td>
+      <td><code>user_id</code>, <code>provider</code>, <code>email</code>, <code>access_token_enc</code>, <code>refresh_token_enc</code>, <code>expires_at</code></td>
+    </tr>
+    <tr>
+      <td><code>import_jobs</code></td>
+      <td>Tracks each paste/upload/email import attempt.</td>
+      <td><code>trip_id</code>, <code>user_id</code>, <code>source</code>, <code>status</code>, <code>raw_summary</code>, <code>error</code></td>
+    </tr>
+    <tr>
+      <td><code>proposed_trip_changes</code></td>
+      <td>Shared review queue for imports and agent suggestions.</td>
+      <td><code>trip_id</code>, <code>import_job_id</code>, <code>payload jsonb</code>, <code>status</code>, <code>confidence</code></td>
+    </tr>
+    <tr>
+      <td><code>user_preferences</code></td>
+      <td>Stores trip-agent personalization.</td>
+      <td><code>user_id</code>, <code>pace</code>, <code>budget_style</code>, <code>food_notes</code>, <code>start_time</code>, <code>end_time</code></td>
+    </tr>
+    <tr>
+      <td><code>agent_messages</code></td>
+      <td>Optional lightweight trip agent memory.</td>
+      <td><code>trip_id</code>, <code>user_id</code>, <code>role</code>, <code>content</code>, <code>created_at</code></td>
+    </tr>
+  </table>
+
+  <h2>5. API Design</h2>
+  <table>
+    <tr>
+      <th style="width: 30%;">Route</th>
+      <th style="width: 20%;">Owner</th>
+      <th>Purpose</th>
+    </tr>
+    <tr>
+      <td><code>POST /api/imports/paste</code></td>
+      <td>Backend + AI</td>
+      <td>Refactor current email import to create proposals.</td>
+    </tr>
+    <tr>
+      <td><code>POST /api/imports/upload</code></td>
+      <td>AI/import owner</td>
+      <td>Accept multipart file, parse PDF/image/HTML/text, create proposals.</td>
+    </tr>
+    <tr>
+      <td><code>GET /api/oauth/google/start</code></td>
+      <td>Backend/OAuth owner</td>
+      <td>Start Google consent flow.</td>
+    </tr>
+    <tr>
+      <td><code>GET /api/oauth/google/callback</code></td>
+      <td>Backend/OAuth owner</td>
+      <td>Exchange code, store account tokens, return to trip import modal.</td>
+    </tr>
+    <tr>
+      <td><code>GET /api/email/search</code></td>
+      <td>Backend/OAuth owner</td>
+      <td>Return likely travel confirmations for user selection.</td>
+    </tr>
+    <tr>
+      <td><code>POST /api/email/import</code></td>
+      <td>Backend + AI</td>
+      <td>Fetch selected email body and create proposals.</td>
+    </tr>
+    <tr>
+      <td><code>POST /api/proposals/[id]/approve</code></td>
+      <td>Backend owner</td>
+      <td>Create/update/move/delete final itinerary item after review.</td>
+    </tr>
+    <tr>
+      <td><code>POST /api/trips/[id]/agent</code></td>
+      <td>Frontend/agent owner</td>
+      <td>Given chat input, itinerary, and preferences, create proposed changes.</td>
+    </tr>
+  </table>
+
+  <h2 class="page-break">6. Team Split</h2>
+  <div class="grid-3">
+    <div class="card">
+      <h3>Person A: Backend + OAuth</h3>
+      <p><span class="tag">Owns</span> data model, API contracts, OAuth, approval endpoint.</p>
+      <p class="small">Avoids touching upload parsing internals and most UI files.</p>
+    </div>
+    <div class="card">
+      <h3>Person B: Smart Upload + Extraction</h3>
+      <p><span class="tag">Owns</span> file upload route, PDF/image/HTML/text normalization, AI extraction prompt.</p>
+      <p class="small">Works against the shared proposal type and mock review endpoint if needed.</p>
+    </div>
+    <div class="card">
+      <h3>Person C: Frontend + Trip Agent</h3>
+      <p><span class="tag">Owns</span> import modal, review queue UI, trip agent panel, apply/reject UX.</p>
+      <p class="small">Uses mock proposals until backend routes are ready, then swaps endpoints.</p>
+    </div>
+  </div>
+
+  <h2>7. Three-Hour Timeline</h2>
+  <table>
+    <tr>
+      <th style="width: 15%;">Time</th>
+      <th>All-team integration action</th>
+      <th>Person A</th>
+      <th>Person B</th>
+      <th>Person C</th>
+    </tr>
+    <tr>
+      <td class="nowrap">0:00-0:15</td>
+      <td>Create branch, agree on contract, assign files.</td>
+      <td>Add shared types to <code>lib/types.ts</code>.</td>
+      <td>Copy proposal type into parser tests/examples.</td>
+      <td>Sketch UI states with mocked proposal data.</td>
+    </tr>
+    <tr>
+      <td class="nowrap">0:15-0:35</td>
+      <td>Merge contract first. Everyone pulls.</td>
+      <td>Add SQL for new tables and basic RLS.</td>
+      <td>Create <code>/api/imports/upload</code> route shell.</td>
+      <td>Refactor <code>SmartImportPanel</code> into tabs.</td>
+    </tr>
+    <tr>
+      <td class="nowrap">0:35-1:15</td>
+      <td>Keep API response shape stable.</td>
+      <td>Add proposal create/list/approve endpoints.</td>
+      <td>Implement text, HTML, and PDF extraction path.</td>
+      <td>Build review panel with edit, approve, reject.</td>
+    </tr>
+    <tr>
+      <td class="nowrap">1:15-1:45</td>
+      <td>First smoke integration: mock proposals to approved itinerary.</td>
+      <td>Add Gmail OAuth start/callback skeleton.</td>
+      <td>Add image path using AI vision or OCR fallback.</td>
+      <td>Add agent chat panel with mocked proposed moves.</td>
+    </tr>
+    <tr>
+      <td class="nowrap">1:45-2:15</td>
+      <td>Second smoke integration: upload creates proposals.</td>
+      <td>Add email search/fetch interface. Gmail first.</td>
+      <td>Connect upload route to extraction and proposal insert.</td>
+      <td>Connect review UI to real proposal endpoints.</td>
+    </tr>
+    <tr>
+      <td class="nowrap">2:15-2:40</td>
+      <td>Freeze features. Only integration and bugs.</td>
+      <td>Env checks, disconnect route, route guards.</td>
+      <td>Improve prompt, warnings, malformed file errors.</td>
+      <td>Connect agent route and proposal preview.</td>
+    </tr>
+    <tr>
+      <td class="nowrap">2:40-3:00</td>
+      <td>Run build, demo script, deployment checklist.</td>
+      <td>Supabase SQL and Vercel env checklist.</td>
+      <td>Test sample PDF/image/email text.</td>
+      <td>Demo flow polish and screenshots if needed.</td>
+    </tr>
+  </table>
+
+  <h2>8. File Ownership To Avoid Merge Pain</h2>
+  <table>
+    <tr>
+      <th>Person</th>
+      <th>Primary files</th>
+      <th>Shared files requiring coordination</th>
+    </tr>
+    <tr>
+      <td>Person A</td>
+      <td><code>supabase/schema.sql</code>, <code>app/api/oauth/*</code>, <code>app/api/email/*</code>, <code>app/api/proposals/*</code></td>
+      <td><code>lib/types.ts</code>, <code>.env.example</code></td>
+    </tr>
+    <tr>
+      <td>Person B</td>
+      <td><code>app/api/imports/upload/route.ts</code>, <code>app/api/imports/paste/route.ts</code>, <code>lib/ai.ts</code>, new <code>lib/imports/*</code></td>
+      <td><code>package.json</code> if adding parser dependencies</td>
+    </tr>
+    <tr>
+      <td>Person C</td>
+      <td><code>components/trip/SmartImportPanel.tsx</code>, new <code>ImportReviewPanel.tsx</code>, new <code>TripAgentPanel.tsx</code></td>
+      <td>Trip page files where panels are mounted</td>
+    </tr>
+  </table>
+
+  <h2>9. Implementation Details By Feature</h2>
+  <h3>OAuth Email Import</h3>
+  <ul>
+    <li>Build Gmail first. Add Outlook only if Gmail path is stable before 2:15.</li>
+    <li>Use user-selected import: list likely confirmations, let the user choose, then parse selected messages.</li>
+    <li>Search query examples: <code>confirmation OR itinerary OR reservation OR booking</code>, sender filters for airlines/hotels.</li>
+    <li>Store tokens encrypted. If encryption is not ready in 3 hours, do not deploy OAuth to production; gate behind missing env.</li>
+    <li>Add disconnect route that deletes <code>connected_accounts</code> rows.</li>
+  </ul>
+
+  <h3>Smart Upload</h3>
+  <ul>
+    <li>Support <code>.txt</code> and <code>.html</code> first because they are fast and reliable.</li>
+    <li>PDF: extract embedded text; if empty, warn that screenshot/OCR path is needed.</li>
+    <li>Images: use an AI vision extraction route or OCR dependency if already available.</li>
+    <li>Normalize input into sections: subject, sender, visible text, tables, links, attachment names.</li>
+    <li>Return proposal confidence and warnings, not only parsed fields.</li>
+  </ul>
+
+  <h3>Trip-Specific Agent</h3>
+  <ul>
+    <li>Agent reads current itinerary, trip dates, budget, and saved preferences.</li>
+    <li>Agent can propose create/update/move/delete actions, but cannot directly mutate the trip.</li>
+    <li>Initial commands to support: "make this less packed", "move this later", "add more food", "keep mornings free".</li>
+    <li>Agent output is stored as proposals and appears in the same review panel as imports.</li>
+  </ul>
+
+  <h2>10. Integration Checkpoints</h2>
+  <ol>
+    <li><strong>0:15 contract checkpoint:</strong> <code>ProposedTripChange</code> exists in <code>lib/types.ts</code>. Everyone imports it.</li>
+    <li><strong>1:15 save checkpoint:</strong> A fake proposal can be approved into <code>itinerary_items</code>.</li>
+    <li><strong>2:15 import checkpoint:</strong> Upload or paste creates proposals visible in review UI.</li>
+    <li><strong>2:40 freeze checkpoint:</strong> Stop adding features. Fix integration and deploy blockers only.</li>
+    <li><strong>3:00 demo checkpoint:</strong> One clean flow works from input to approved calendar item.</li>
+  </ol>
+
+  <h2>11. Deployment Checklist</h2>
+  <div class="grid-2">
+    <div class="card">
+      <h3>Before Build</h3>
+      <ul>
+        <li>Run Supabase SQL additions.</li>
+        <li>Add env vars to <code>.env.local</code> and Vercel.</li>
+        <li>Confirm <code>OPENAI_API_KEY</code> is set.</li>
+        <li>Confirm OAuth redirect URL matches deployed domain.</li>
+        <li>Confirm no raw emails or local env files are committed.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Commands</h3>
+      <pre>npm install
+npm run build
+npm run dev
+
+# after deployment
+# test login, trip page, upload import,
+# review approve, and agent proposal</pre>
+    </div>
+  </div>
+
+  <h2>12. Demo Script</h2>
+  <ol>
+    <li>Create or open a Tokyo trip.</li>
+    <li>Open Smart Import and upload a sample hotel confirmation PDF or image.</li>
+    <li>Show extracted proposals with confidence and warnings.</li>
+    <li>Edit one field, approve it, and show the item in the itinerary/calendar.</li>
+    <li>Open the trip agent and say: <code>Make this day less packed and keep mornings relaxed.</code></li>
+    <li>Review the agent's proposed schedule moves and approve one.</li>
+    <li>If OAuth is ready, connect Gmail and import one selected confirmation email. If not, show the gated OAuth UI and explain the provider interface is ready.</li>
+  </ol>
+
+  <h2>13. Risk Controls</h2>
+  <table>
+    <tr>
+      <th>Risk</th>
+      <th>Control</th>
+    </tr>
+    <tr>
+      <td>OAuth takes longer than expected</td>
+      <td>Ship upload + paste + OAuth UI skeleton. Do not block the whole demo on provider auth.</td>
+    </tr>
+    <tr>
+      <td>AI parses incorrectly</td>
+      <td>Review screen is mandatory. Confidence and warnings make uncertainty visible.</td>
+    </tr>
+    <tr>
+      <td>Merge conflicts</td>
+      <td>Follow file ownership and merge the shared contract first.</td>
+    </tr>
+    <tr>
+      <td>Security concerns</td>
+      <td>Do not store raw email bodies long-term. Delete or summarize after proposals are created.</td>
+    </tr>
+    <tr>
+      <td>Deployment breaks from missing env</td>
+      <td>Feature-gate OAuth and agent calls when required env vars are missing.</td>
+    </tr>
+  </table>
+
+  <h2>14. Environment Variables</h2>
+  <pre>OPENAI_API_KEY=...
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+GOOGLE_REDIRECT_URI=https://your-domain.com/api/oauth/google/callback
+
+MICROSOFT_CLIENT_ID=...
+MICROSOFT_CLIENT_SECRET=...
+MICROSOFT_REDIRECT_URI=https://your-domain.com/api/oauth/microsoft/callback
+
+TOKEN_ENCRYPTION_KEY=...</pre>
+
+  <h2>15. Final Definition Of Done</h2>
+  <div class="success callout">
+    The sprint is successful if one complete path works end-to-end:
+    <strong>source data enters TRVL, proposals are generated, the user reviews them,
+    approved changes become itinerary items, and the deployed app does not expose secrets
+    or mutate trips without confirmation.</strong>
+  </div>
+
+  <p class="small">
+    Reference notes: Gmail scopes and data policy are documented by Google at
+    https://developers.google.com/workspace/gmail/api/auth/scopes and
+    https://developers.google.com/gmail/api/policy. Microsoft Graph mail permissions are
+    documented at https://learn.microsoft.com/en-us/graph/permissions-reference.
+  </p>
+</body>
+</html>
