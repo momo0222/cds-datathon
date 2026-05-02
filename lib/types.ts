@@ -144,12 +144,11 @@ export interface FlightOffer {
   currency: string;
 }
 export type ProposalSource = "gmail" | "upload" | "paste" | "agent";
+export type ProposalAction = "create" | "update" | "move" | "delete";
+export type ProposalStatus = "pending" | "approved" | "rejected";
+export type ImportJobStatus = "processing" | "needs_review" | "approved" | "failed";
 
-export interface ProposedTripChange {
-  id?: string;
-  trip_id: string;
-  source: ProposalSource;
-  source_ref?: string | null;
+export interface ProposedTripChangePayload {
   type: ItemType;
   title: string;
   detail?: string | null;
@@ -157,14 +156,45 @@ export interface ProposedTripChange {
   time?: string | null;
   end_time?: string | null;
   location_name?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   booking_ref?: string | null;
   booking_url?: string | null;
   cost?: number;
   currency?: string;
   notes?: string | null;
+}
+export interface ProposedTripChange {
+  id?: string;
+  trip_id: string;
+  import_job_id?: string | null;
+  created_by?: string | null;
+  source: ProposalSource;
+  source_ref?: string | null;
+  action: ProposalAction;
+  target_item_id?: string | null;
+  status?: ProposalStatus;
+  payload?: ProposedTripChangePayload;
   confidence: number;
   warnings: string[];
-  action: "create" | "update" | "move" | "delete";
-  target_item_id?: string | null;
+  created_at?: string;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
+
+  // Temporary flat fields for Person B's current paste/upload routes.
+  type?: ItemType;
+  title?: string;
+  detail?: string | null;
+  day_date?: string | null;
+  time?: string | null;
+  end_time?: string | null;
+  location_name?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  booking_ref?: string | null;
+  booking_url?: string | null;
+  cost?: number;
+  currency?: string;
+  notes?: string | null;
 }
 

@@ -146,7 +146,7 @@ create table public.shared_links (
 create table public.connected_accounts (
   id uuid default uuid_generate_v4() primary key,
   user_id uuid references public.profiles(id) on delete cascade not null,
-  provider text not null check (provider in ('gmail', 'outlook')),
+  provider text not null check (provider in ('gmail')),
   provider_account_id text,
   email text,
   access_token_enc text,
@@ -165,7 +165,7 @@ create table public.import_jobs (
   id uuid default uuid_generate_v4() primary key,
   trip_id uuid references public.trips(id) on delete cascade not null,
   user_id uuid references public.profiles(id) on delete set null,
-  source text not null check (source in ('gmail', 'outlook', 'upload', 'paste', 'agent')),
+  source text not null check (source in ('gmail', 'upload', 'paste', 'agent')),
   status text not null default 'processing'
     check (status in ('processing', 'needs_review', 'approved', 'failed')),
   source_ref text,
@@ -184,7 +184,7 @@ create table public.proposed_trip_changes (
   import_job_id uuid references public.import_jobs(id) on delete set null,
   created_by uuid references public.profiles(id) on delete set null,
 
-  source text not null check (source in ('gmail', 'outlook', 'upload', 'paste', 'agent')),
+  source text not null check (source in ('gmail', 'upload', 'paste', 'agent')),
   action text not null default 'create'
     check (action in ('create', 'update', 'move', 'delete')),
   target_item_id uuid references public.itinerary_items(id) on delete set null,
