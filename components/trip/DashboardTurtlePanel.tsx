@@ -23,7 +23,7 @@ export function DashboardTurtlePanel() {
           <div className="px-4 py-4">
             <div className="flex flex-col gap-2">
               <p className="rounded-2xl bg-sand-50 px-3 py-2 text-sm text-sand-600">
-                Hi, welcome to TRVL! I am your tiny turtle trip helper. 🐢
+                Hi, welcome to TRVL! I'm here to help you plan amazing trips.
               </p>
               <p className="rounded-2xl bg-sand-50 px-3 py-2 text-sm text-sand-600">
                 Here is how to get started:

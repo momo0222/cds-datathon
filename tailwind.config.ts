@@ -9,21 +9,37 @@ const config: Config = {
     extend: {
       colors: {
         sand: {
-          50: "#FAFAF8",
-          100: "#F5F4F0",
-          200: "#E8E6DF",
-          300: "#D4D0C8",
-          400: "#A8A294",
-          500: "#7C7568",
-          600: "#5A5548",
-          700: "#3D3A30",
-          800: "#2A2822",
-          900: "#1A1915",
+          50: "#F6F9F7",
+          100: "#EDF4EF",
+          200: "#D9E8DC",
+          300: "#BDD8C3",
+          400: "#8FBF99",
+          500: "#639E6F",
+          600: "#4A7A54",
+          700: "#365A3E",
+          800: "#263F2B",
+          900: "#18281C",
         },
-        coral: { DEFAULT: "#E8453C", light: "#FDEDEC", dark: "#B22E27" },
-        ocean: { DEFAULT: "#2D5A8E", light: "#E8F0FA", dark: "#1B3A5E" },
-        moss: { DEFAULT: "#2DA478", light: "#E6F9F0", dark: "#1E7A56" },
-        amber: { DEFAULT: "#EA961E", light: "#FFF6E8", dark: "#B87315" },
+        ocean: {
+          DEFAULT: "#1D9E75",  // Main teal from logo
+          light: "#E1F5EE",    // Light teal background
+          dark: "#0F6E56"      // Darker teal
+        },
+        moss: {
+          DEFAULT: "#5DCAA5",  // Bright teal accent
+          light: "#9FE1CB",    // Soft teal
+          dark: "#085041"      // Deep teal
+        },
+        coral: {
+          DEFAULT: "#FAC775",  // Golden orange from logo
+          light: "#FAEEDA",    // Light peachy background
+          dark: "#BA7517"      // Deeper orange
+        },
+        amber: {
+          DEFAULT: "#EF9F27",  // Rich golden orange
+          light: "#FAEEDA",    // Light warm background
+          dark: "#854F0B"      // Dark amber/brown
+        },
       },
       fontFamily: {
         display: ["Fraunces", "serif"],

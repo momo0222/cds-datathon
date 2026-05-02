@@ -82,7 +82,7 @@ export default async function DashboardPage() {
           {allTrips.length === 0 ? (
             <div className="card p-6 animate-slide-up">
               <p className="text-sand-400 text-sm">
-                🐢 No trips yet — your turtle is ready to plan one!
+                🌟 Ready to plan your next adventure!
               </p>
             </div>
           ) : (

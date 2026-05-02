@@ -40,7 +40,7 @@ create table public.trips (
   name text not null,
   destination text not null,
   cover_emoji text default '✈️',
-  color text default '#2D5A8E',
+  color text default '#1D9E75',
   start_date date not null,
   end_date date not null,
   total_budget numeric(10,2) default 0,

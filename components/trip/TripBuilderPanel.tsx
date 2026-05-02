@@ -73,9 +73,9 @@ export function TripBuilderPanel({ onCreated }: Props) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-coral/10 text-amber-700 text-sm font-semibold hover:from-amber-500/20 hover:to-coral/20 transition-all"
+        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 text-amber-700 text-sm font-semibold hover:from-amber-500/20 hover:to-coral/20 transition-all"
       >
-        <span className="text-base">✨</span>
+        
         AI Trip Builder
       </button>
     );
@@ -86,7 +86,7 @@ export function TripBuilderPanel({ onCreated }: Props) {
       <div className="flex justify-between items-center mb-4">
         <div>
           <h3 className="font-display text-lg font-bold text-sand-900 flex items-center gap-2">
-            <span>✨</span> AI Trip Builder
+            AI Trip Builder
           </h3>
           <p className="text-sand-400 text-xs mt-0.5">
             Describe your trip and AI will generate a full day-by-day itinerary

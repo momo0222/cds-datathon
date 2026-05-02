@@ -255,7 +255,7 @@ export function TripAgentPanel({ trip, onProposals }: Props) {
                 className="input min-w-0 flex-1 rounded-xl py-2"
               />
               <button disabled={loading || !input.trim()} className="btn-primary shrink-0 px-4 py-2 disabled:opacity-50">
-                {loading ? "🐢 thinking..." : "Send"}
+                {loading ? "⏳ Thinking..." : "Send"}
               </button>
             </form>
           </div>
