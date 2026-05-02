@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Day, ItineraryItem, Trip } from "@/lib/types";
 import { DayTabs } from "@/components/trip/DayTabs";
 import { ItineraryItemCard } from "@/components/trip/ItineraryItemCard";
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export function ItineraryView({ trip, canEdit = true }: Props) {
+  const router = useRouter();
   const days = trip.days ?? [];
   const [activeIndex, setActiveIndex] = useState(0);
   const activeDay = days[activeIndex];
@@ -71,7 +73,7 @@ export function ItineraryView({ trip, canEdit = true }: Props) {
             tripId={trip.id}
             currency={trip.currency ?? "USD"}
             incomingProposals={incomingProposals}
-            onChanged={() => window.location.reload()}
+            onChanged={() => router.refresh()}
           />
         </>
       )}
@@ -105,7 +107,7 @@ export function ItineraryView({ trip, canEdit = true }: Props) {
           sortOrder={items.length}
           currency={trip.currency ?? "USD"}
           onClose={() => setShowAdd(false)}
-          onAdded={() => window.location.reload()}
+          onAdded={() => router.refresh()}
         />
       )}
 
@@ -114,8 +116,8 @@ export function ItineraryView({ trip, canEdit = true }: Props) {
           item={editingItem}
           currency={trip.currency ?? "USD"}
           onClose={() => setEditingItem(null)}
-          onSaved={() => window.location.reload()}
-          onDeleted={() => window.location.reload()}
+          onSaved={() => router.refresh()}
+          onDeleted={() => router.refresh()}
         />
       )}
 

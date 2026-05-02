@@ -10,12 +10,31 @@ interface Props {
   onImported?: (proposals: ReviewProposal[]) => void;
 }
 
+type GmailMessage = {
+  id: string;
+  from: string | null;
+  subject: string | null;
+  date: string | null;
+  snippet: string;
+  best_match: {
+    score: number;
+    confidence: "high" | "medium" | "low" | "none";
+    reasons: string[];
+  } | null;
+};
+
 export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props) {
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"paste" | "upload" | "email">("paste");
+  const [activeTab, setActiveTab] = useState<"paste" | "upload" | "gmail">("paste");
   const [emailBody, setEmailBody] = useState("");
   const [emailSubject, setEmailSubject] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [gmailConnected, setGmailConnected] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.sessionStorage.getItem(`trvl:gmail-connected:${tripId}`) === "true";
+  });
+  const [gmailMessages, setGmailMessages] = useState<GmailMessage[]>([]);
+  const [selectedMessageIds, setSelectedMessageIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ proposed: number } | null>(null);
@@ -24,6 +43,11 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
     const normalized = proposals.map(normalizeReviewProposal);
     setResult({ proposed: normalized.length });
     onImported?.(normalized);
+  }
+
+  function connectGmail() {
+    window.sessionStorage.setItem(`trvl:gmail-connected:${tripId}`, "true");
+    window.location.href = `/api/oauth/google/start?return_to=/trips/${tripId}`;
   }
 
   async function handlePasteImport() {
@@ -107,7 +131,7 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
     }
   }
 
-  async function handleEmailImport() {
+  async function handleGmailSearch() {
     setLoading(true);
     setError(null);
     setResult(null);
@@ -117,28 +141,85 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
       const data = await res.json();
 
       if (res.ok) {
-        const proposals = (data.proposals ?? data.changes ?? []) as ProposedTripChange[];
-        if (proposals.length > 0) {
-          storeApiProposals(proposals);
-          setLoading(false);
-          return;
+        setGmailConnected(true);
+        window.sessionStorage.setItem(`trvl:gmail-connected:${tripId}`, "true");
+        setGmailMessages((data.messages ?? []) as GmailMessage[]);
+        setSelectedMessageIds(new Set());
+        if ((data.messages ?? []).length === 0) {
+          setError("No likely travel confirmations found in Gmail.");
         }
-        setError("Email search is connected, but no importable travel emails were returned yet.");
         setLoading(false);
         return;
       }
+
+      setError(data.error || "Gmail search failed. Connect Gmail and try again.");
+      if (res.status === 401 || res.status === 403) {
+        setGmailConnected(false);
+        window.sessionStorage.removeItem(`trvl:gmail-connected:${tripId}`);
+      }
+      setLoading(false);
+      return;
     } catch {
-      // Person A's OAuth/email routes may not exist yet.
+      setError("Gmail search is not available yet. Check that /api/email/search exists.");
+      setLoading(false);
+      return;
+    }
+  }
+
+  async function handleGmailImport() {
+    const messageIds = Array.from(selectedMessageIds);
+    if (messageIds.length === 0) {
+      setError("Select at least one Gmail message to import.");
+      return;
     }
 
-    setError("Email import needs Person A's OAuth/email endpoints before it can fetch messages.");
-    setLoading(false);
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const res = await fetch("/api/email/import", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          trip_id: tripId,
+          message_ids: messageIds,
+          default_currency: currency,
+        }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        storeApiProposals((data.proposals ?? []) as ProposedTripChange[]);
+        setLoading(false);
+        return;
+      }
+
+      setError(data.error || "Gmail import failed.");
+      setLoading(false);
+      return;
+    } catch {
+      setError("Gmail import is not available yet. Check that /api/email/import exists.");
+      setLoading(false);
+      return;
+    }
   }
 
   function handleImport() {
     if (activeTab === "upload") return handleUploadImport();
-    if (activeTab === "email") return handleEmailImport();
     return handlePasteImport();
+  }
+
+  function toggleMessage(id: string) {
+    setSelectedMessageIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
   }
 
   if (!open) {
@@ -177,11 +258,15 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
           {[
             ["paste", "Paste"],
             ["upload", "Upload"],
-            ["email", "Email"],
+            ["gmail", "Gmail"],
           ].map(([key, label]) => (
             <button
               key={key}
-              onClick={() => setActiveTab(key as "paste" | "upload" | "email")}
+              onClick={() => {
+                setActiveTab(key as "paste" | "upload" | "gmail");
+                setError(null);
+                setResult(null);
+              }}
               className={
                 activeTab === key
                   ? "rounded-xl bg-white px-3 py-2 text-xs font-semibold text-sand-900 shadow-sm"
@@ -240,9 +325,81 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
           </div>
         )}
 
-        {activeTab === "email" && (
-          <div className="rounded-2xl bg-sand-50 px-4 py-3 text-sm text-sand-500">
-            Calls /api/email/search when Person A's OAuth/email routes are available.
+        {activeTab === "gmail" && (
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap gap-2">
+              {!gmailConnected && (
+                <button
+                  onClick={connectGmail}
+                  className="btn-secondary px-4 py-2 text-xs"
+                >
+                  Connect Gmail
+                </button>
+              )}
+              <button
+                onClick={handleGmailSearch}
+                disabled={loading}
+                className="btn-primary px-4 py-2 text-xs disabled:opacity-50"
+              >
+                Search Gmail
+              </button>
+            </div>
+
+            {gmailMessages.length > 0 && (
+              <div className="rounded-2xl border border-sand-100 bg-white">
+                <div className="border-b border-sand-100 px-4 py-3">
+                  <p className="text-sm font-semibold text-sand-900">Found Gmail messages</p>
+                  <p className="text-xs text-sand-400">Select confirmations to import as review suggestions.</p>
+                </div>
+                <div className="max-h-80 overflow-y-auto">
+                  {gmailMessages.map((message) => (
+                    <label
+                      key={message.id}
+                      className="flex cursor-pointer gap-3 border-b border-sand-100 px-4 py-3 last:border-b-0 hover:bg-sand-50"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedMessageIds.has(message.id)}
+                        onChange={() => toggleMessage(message.id)}
+                        className="mt-1 h-4 w-4 accent-ocean"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="truncate text-sm font-semibold text-sand-900">
+                            {message.subject || "No subject"}
+                          </p>
+                          {message.best_match && (
+                            <span className="chip bg-ocean/10 text-ocean text-[10px] px-2 py-0.5">
+                              {Math.round(message.best_match.score * 100)}%
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-0.5 text-xs text-sand-400">
+                          {message.from || "Unknown sender"}
+                          {message.date ? ` · ${message.date}` : ""}
+                        </p>
+                        <p className="mt-1 line-clamp-2 text-xs text-sand-500">{message.snippet}</p>
+                        {message.best_match?.reasons?.length ? (
+                          <p className="mt-2 text-xs text-sand-500">
+                            {message.best_match.reasons.join(" ")}
+                          </p>
+                        ) : null}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {gmailMessages.length > 0 && (
+              <button
+                onClick={handleGmailImport}
+                disabled={loading || selectedMessageIds.size === 0}
+                className="btn-primary w-full py-3 text-sm font-semibold disabled:opacity-50"
+              >
+                Import Selected for Review
+              </button>
+            )}
           </div>
         )}
 
@@ -254,20 +411,22 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
           </div>
         )}
 
-        <button
-          onClick={handleImport}
-          disabled={loading || (activeTab === "paste" && !emailBody.trim()) || (activeTab === "upload" && !selectedFile)}
-          className="btn-primary w-full py-3 text-sm font-semibold disabled:opacity-50"
-        >
-          {loading ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
-              AI is parsing your email...
-            </span>
-          ) : (
-            activeTab === "upload" ? "Upload for Review" : activeTab === "email" ? "Search Connected Email" : "Create Review Suggestions"
-          )}
-        </button>
+        {activeTab !== "gmail" && (
+          <button
+            onClick={handleImport}
+            disabled={loading || (activeTab === "paste" && !emailBody.trim()) || (activeTab === "upload" && !selectedFile)}
+            className="btn-primary w-full py-3 text-sm font-semibold disabled:opacity-50"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
+                AI is parsing your email...
+              </span>
+            ) : (
+              activeTab === "upload" ? "Upload for Review" : "Create Review Suggestions"
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
