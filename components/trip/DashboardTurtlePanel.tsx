@@ -45,9 +45,13 @@ export function DashboardTurtlePanel() {
       <button
         onClick={() => setOpen((current) => !current)}
         aria-label="Open trip agent"
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-moss text-2xl shadow-xl shadow-sand-300/50 transition-transform hover:scale-105 active:scale-95"
+        className="flex h-16 w-16 items-center justify-center rounded-full bg-moss shadow-xl shadow-sand-300/50 transition-transform hover:scale-105 active:scale-95"
       >
-        🐢
+        <img
+          src="/custom-turtle.png"
+          alt="TRVL Turtle"
+          className="h-10 w-10 object-contain"
+        />
       </button>
     </div>
   );

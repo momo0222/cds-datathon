@@ -20,11 +20,13 @@ export async function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 glass border-b border-sand-100">
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <span className="font-display text-xl font-bold text-sand-900 tracking-tight">
-            TRVL
-          </span>
+          <img
+            src="/custom-logo.png"
+            alt="TRVL"
+            className="h-12 w-auto"
+          />
           <span className="chip bg-ocean/10 text-ocean text-[10px]">beta</span>
         </Link>
 

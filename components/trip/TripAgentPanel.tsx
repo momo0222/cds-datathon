@@ -265,10 +265,14 @@ export function TripAgentPanel({ trip, onProposals }: Props) {
       <button
         onClick={() => setOpen((current) => !current)}
         aria-label="Open trip agent"
-        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-moss text-2xl shadow-xl shadow-sand-300/50 transition-transform hover:scale-105 active:scale-95"
+        className="relative flex h-16 w-16 items-center justify-center rounded-full bg-moss shadow-xl shadow-sand-300/50 transition-transform hover:scale-105 active:scale-95"
       >
         <span className={flowerPhase === "chomp" ? "translate-x-0.5 transition-transform duration-150" : "transition-transform duration-300"}>
-          🐢
+          <img
+            src="/custom-turtle.png"
+            alt="TRVL Turtle"
+            className="h-10 w-10 object-contain"
+          />
         </span>
         {flowerPhase === "chomp" && (
           <span

@@ -4,6 +4,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "TRVL — Travel Planning That Gives Back Time",
   description: "Consolidate flights, hotels, budgets, food & maps into one shareable itinerary.",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
