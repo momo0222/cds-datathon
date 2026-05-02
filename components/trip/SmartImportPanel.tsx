@@ -416,8 +416,7 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
-                <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
-                AI is parsing your email...
+                🐢 your turtle is thinking...
               </span>
             ) : (
               activeTab === "upload" ? "Upload for Review" : "Create Review Suggestions"

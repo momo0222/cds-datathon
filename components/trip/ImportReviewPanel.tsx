@@ -77,6 +77,7 @@ export function ImportReviewPanel({ tripId, currency = "USD", incomingProposals 
       const res = await fetch(`/api/proposals/${proposal.id}/approve`, { method: "POST" });
       if (res.ok) {
         setProposals((current) => current.filter((item) => item.id !== proposal.id));
+        setMessage("🐢 Added to your itinerary!");
         onChanged?.();
         return;
       }
@@ -128,7 +129,7 @@ export function ImportReviewPanel({ tripId, currency = "USD", incomingProposals 
       )}
 
       {loading ? (
-        <div className="rounded-2xl bg-sand-50 px-4 py-3 text-sm text-sand-400">Loading suggestions...</div>
+        <div className="rounded-2xl bg-sand-50 px-4 py-3 text-sm text-sand-400">🐢 your turtle is fetching suggestions...</div>
       ) : (
         <div className="flex flex-col gap-3">
           {proposals.map((proposal) => {
