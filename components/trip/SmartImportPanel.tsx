@@ -319,9 +319,6 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
               onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
               className="input w-full"
             />
-            <p className="mt-2 text-xs text-sand-400">
-              Calls /api/imports/upload and shows suggestions returned by the API.
-            </p>
           </div>
         )}
 
