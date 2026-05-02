@@ -197,4 +197,3 @@ export interface ProposedTripChange {
   currency?: string;
   notes?: string | null;
 }
-

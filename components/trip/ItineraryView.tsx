@@ -7,6 +7,9 @@ import { ItineraryItemCard } from "@/components/trip/ItineraryItemCard";
 import { AddItemModal } from "@/components/trip/AddItemModal";
 import { EditItemModal } from "@/components/trip/EditItemModal";
 import { SmartImportPanel } from "@/components/trip/SmartImportPanel";
+import { ImportReviewPanel } from "@/components/trip/ImportReviewPanel";
+import { TripAgentPanel } from "@/components/trip/TripAgentPanel";
+import { ReviewProposal } from "@/components/trip/proposalDraftStore";
 
 type TripWithDays = Trip & { days?: (Day & { items?: ItineraryItem[] })[] };
 
@@ -31,6 +34,15 @@ export function ItineraryView({ trip, canEdit = true }: Props) {
 
   const [showAdd, setShowAdd] = useState(false);
   const [editingItem, setEditingItem] = useState<ItineraryItem | null>(null);
+  const [incomingProposals, setIncomingProposals] = useState<ReviewProposal[]>([]);
+
+  function addIncomingProposals(proposals: ReviewProposal[]) {
+    setIncomingProposals((current) => {
+      const byId = new Map(current.map((proposal) => [proposal.id, proposal]));
+      proposals.forEach((proposal) => byId.set(proposal.id, proposal));
+      return Array.from(byId.values());
+    });
+  }
 
   return (
     <>
@@ -49,11 +61,19 @@ export function ItineraryView({ trip, canEdit = true }: Props) {
 
       {/* AI Tools */}
       {canEdit && (
-        <SmartImportPanel
-          tripId={trip.id}
-          currency={trip.currency ?? "USD"}
-          onImported={() => window.location.reload()}
-        />
+        <>
+          <SmartImportPanel
+            tripId={trip.id}
+            currency={trip.currency ?? "USD"}
+            onImported={addIncomingProposals}
+          />
+          <ImportReviewPanel
+            tripId={trip.id}
+            currency={trip.currency ?? "USD"}
+            incomingProposals={incomingProposals}
+            onChanged={() => window.location.reload()}
+          />
+        </>
       )}
 
       <div className="flex flex-col gap-3 mt-4">
@@ -98,6 +118,8 @@ export function ItineraryView({ trip, canEdit = true }: Props) {
           onDeleted={() => window.location.reload()}
         />
       )}
+
+      {canEdit && <TripAgentPanel trip={trip} onProposals={addIncomingProposals} />}
     </>
   );
 }

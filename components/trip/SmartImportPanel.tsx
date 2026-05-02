@@ -1,29 +1,43 @@
 "use client";
 
 import { useState } from "react";
+import { ProposedTripChange } from "@/lib/types";
+import { normalizeReviewProposal, ReviewProposal } from "@/components/trip/proposalDraftStore";
 
 interface Props {
   tripId: string;
   currency?: string;
-  onImported: () => void;
+  onImported?: (proposals: ReviewProposal[]) => void;
 }
 
 export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props) {
   const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"paste" | "upload" | "email">("paste");
   const [emailBody, setEmailBody] = useState("");
   const [emailSubject, setEmailSubject] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ created: number } | null>(null);
+  const [result, setResult] = useState<{ proposed: number } | null>(null);
 
-  async function handleImport() {
-    if (!emailBody.trim()) return;
+  function storeApiProposals(proposals: ProposedTripChange[]) {
+    const normalized = proposals.map(normalizeReviewProposal);
+    setResult({ proposed: normalized.length });
+    onImported?.(normalized);
+  }
+
+  async function handlePasteImport() {
+    if (!emailBody.trim()) {
+      setError("Paste confirmation text first.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setResult(null);
 
     try {
-      const res = await fetch("/api/ai/import-email", {
+      const res = await fetch("/api/imports/paste", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -35,22 +49,96 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Import failed");
+      if (res.ok) {
+        storeApiProposals((data.proposals ?? data.changes ?? []) as ProposedTripChange[]);
         setLoading(false);
         return;
       }
 
-      setResult({ created: data.created });
+      setError(data.error || "Paste import failed.");
       setLoading(false);
-
-      setTimeout(() => {
-        onImported();
-      }, 1500);
+      return;
     } catch (err) {
-      setError("Network error");
+      setError("Paste import failed. Check that the import API and environment keys are configured.");
       setLoading(false);
+      return;
     }
+  }
+
+  async function handleUploadImport() {
+    if (!selectedFile) {
+      setError("Choose a file first.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    const formData = new FormData();
+    formData.append("trip_id", tripId);
+    formData.append("file", selectedFile);
+
+    try {
+      const res = await fetch("/api/imports/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        const proposals = (data.proposals ?? data.changes ?? []) as ProposedTripChange[];
+        if (proposals.length > 0) {
+          storeApiProposals(proposals);
+        } else {
+          setResult({ proposed: 0 });
+        }
+        setLoading(false);
+        return;
+      }
+
+      setError(data.error || "Upload import failed.");
+      setLoading(false);
+      return;
+    } catch {
+      setError("Upload import failed. Check that the upload API is configured.");
+      setLoading(false);
+      return;
+    }
+  }
+
+  async function handleEmailImport() {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const res = await fetch(`/api/email/search?trip_id=${tripId}`, { cache: "no-store" });
+      const data = await res.json();
+
+      if (res.ok) {
+        const proposals = (data.proposals ?? data.changes ?? []) as ProposedTripChange[];
+        if (proposals.length > 0) {
+          storeApiProposals(proposals);
+          setLoading(false);
+          return;
+        }
+        setError("Email search is connected, but no importable travel emails were returned yet.");
+        setLoading(false);
+        return;
+      }
+    } catch {
+      // Person A's OAuth/email routes may not exist yet.
+    }
+
+    setError("Email import needs Person A's OAuth/email endpoints before it can fetch messages.");
+    setLoading(false);
+  }
+
+  function handleImport() {
+    if (activeTab === "upload") return handleUploadImport();
+    if (activeTab === "email") return handleEmailImport();
+    return handlePasteImport();
   }
 
   if (!open) {
@@ -73,7 +161,7 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
             <span>📧</span> Smart Import
           </h3>
           <p className="text-sand-400 text-xs mt-0.5">
-            Paste a booking confirmation email and AI will extract flights, hotels, and activities
+            Add travel confirmations as suggestions before they change the itinerary
           </p>
         </div>
         <button
@@ -85,43 +173,90 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
       </div>
 
       <div className="flex flex-col gap-3">
-        <div>
-          <label className="font-mono text-[11px] text-sand-400 uppercase tracking-widest mb-1.5 block">
-            Email Subject (optional)
-          </label>
-          <input
-            type="text"
-            value={emailSubject}
-            onChange={(e) => setEmailSubject(e.target.value)}
-            placeholder="Your flight confirmation - Delta Air Lines"
-            className="input w-full"
-          />
+        <div className="grid grid-cols-3 gap-2 rounded-2xl bg-sand-50 p-1">
+          {[
+            ["paste", "Paste"],
+            ["upload", "Upload"],
+            ["email", "Email"],
+          ].map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key as "paste" | "upload" | "email")}
+              className={
+                activeTab === key
+                  ? "rounded-xl bg-white px-3 py-2 text-xs font-semibold text-sand-900 shadow-sm"
+                  : "rounded-xl px-3 py-2 text-xs font-semibold text-sand-400 hover:text-sand-700"
+              }
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
-        <div>
-          <label className="font-mono text-[11px] text-sand-400 uppercase tracking-widest mb-1.5 block">
-            Email Body / Confirmation Text *
-          </label>
-          <textarea
-            value={emailBody}
-            onChange={(e) => setEmailBody(e.target.value)}
-            placeholder={"Paste your booking confirmation email here...\n\nExample:\nBooking Confirmation\nDelta Air Lines\nConfirmation: ABC123\nJFK → NRT\nMarch 27, 2026 at 1:15 PM\nPassenger: Joy Wang\nSeat: 24A Economy\n..."}
-            rows={8}
-            className="input w-full resize-none font-mono text-xs"
-          />
-        </div>
+        {activeTab === "paste" && (
+          <>
+            <div>
+              <label className="font-mono text-[11px] text-sand-400 uppercase tracking-widest mb-1.5 block">
+                Email Subject (optional)
+              </label>
+              <input
+                type="text"
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                placeholder="Your flight confirmation - Delta Air Lines"
+                className="input w-full"
+              />
+            </div>
+
+            <div>
+              <label className="font-mono text-[11px] text-sand-400 uppercase tracking-widest mb-1.5 block">
+                Email Body / Confirmation Text *
+              </label>
+              <textarea
+                value={emailBody}
+                onChange={(e) => setEmailBody(e.target.value)}
+                placeholder={"Paste your booking confirmation email here...\n\nExample:\nBooking Confirmation\nDelta Air Lines\nConfirmation: ABC123\nJFK → NRT\nMarch 27, 2026 at 1:15 PM\nPassenger: Joy Wang\nSeat: 24A Economy\n..."}
+                rows={8}
+                className="input w-full resize-none font-mono text-xs"
+              />
+            </div>
+          </>
+        )}
+
+        {activeTab === "upload" && (
+          <div>
+            <label className="font-mono text-[11px] text-sand-400 uppercase tracking-widest mb-1.5 block">
+              Upload Confirmation
+            </label>
+            <input
+              type="file"
+              accept=".txt,.html,.pdf,.png,.jpg,.jpeg,.webp,text/plain,text/html,application/pdf,image/png,image/jpeg,image/webp"
+              onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+              className="input w-full"
+            />
+            <p className="mt-2 text-xs text-sand-400">
+              Calls /api/imports/upload and shows suggestions returned by the API.
+            </p>
+          </div>
+        )}
+
+        {activeTab === "email" && (
+          <div className="rounded-2xl bg-sand-50 px-4 py-3 text-sm text-sand-500">
+            Calls /api/email/search when Person A's OAuth/email routes are available.
+          </div>
+        )}
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         {result && (
           <div className="bg-emerald-50 text-emerald-700 rounded-xl px-4 py-3 text-sm font-medium">
-            Successfully imported {result.created} item{result.created !== 1 ? "s" : ""}! Refreshing...
+            Added {result.proposed} suggestion{result.proposed !== 1 ? "s" : ""} to review.
           </div>
         )}
 
         <button
           onClick={handleImport}
-          disabled={loading || !emailBody.trim()}
+          disabled={loading || (activeTab === "paste" && !emailBody.trim()) || (activeTab === "upload" && !selectedFile)}
           className="btn-primary w-full py-3 text-sm font-semibold disabled:opacity-50"
         >
           {loading ? (
@@ -130,7 +265,7 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
               AI is parsing your email...
             </span>
           ) : (
-            "Import with AI"
+            activeTab === "upload" ? "Upload for Review" : activeTab === "email" ? "Search Connected Email" : "Create Review Suggestions"
           )}
         </button>
       </div>
