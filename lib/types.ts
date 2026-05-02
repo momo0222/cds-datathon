@@ -143,3 +143,20 @@ export interface FlightOffer {
   price: number;
   currency: string;
 }
+
+type ProposedTripChange = {
+  source: "gmail" | "outlook" | "upload" | "agent" | "manual";
+  type: "flight" | "hotel" | "restaurant" | "activity" | "transport" | "expense" | "note";
+  title: string;
+  startDateTime?: string;
+  endDateTime?: string;
+  locationName?: string;
+  address?: string;
+  vendor?: string;
+  confirmationCode?: string;
+  cost?: number;
+  currency?: string;
+  confidence: number;
+  warnings: string[];
+  rawSummary?: string;
+};
