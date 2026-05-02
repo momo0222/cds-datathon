@@ -34,13 +34,14 @@ const TRAVEL_TERMS = [
   "itinerary",
   "receipt",
   "check-in",
-  "check in",
   "flight",
   "hotel",
   "airbnb",
   "boarding",
+  "boarding pass",
   "ticket",
-  "trip",
+  "e-ticket",
+  "e ticket",
 ];
 
 const TRAVEL_SENDERS = [
@@ -48,6 +49,8 @@ const TRAVEL_SENDERS = [
   "booking",
   "expedia",
   "hotels.com",
+  "air canada",
+  "aircanada",
   "delta",
   "united",
   "american airlines",
@@ -61,6 +64,35 @@ const TRAVEL_SENDERS = [
   "opentable",
   "ticketmaster",
   "eventbrite",
+];
+
+const PROMOTIONAL_TERMS = [
+  "newsletter",
+  "savings",
+  "deals",
+  "offer",
+  "offers",
+  "escape",
+  "getaway",
+  "getaways",
+  "adventure",
+  "adventures",
+  "pre-order",
+  "preorder",
+  "weekly",
+  "photo newsletter",
+];
+
+const NON_TRAVEL_CONFIRMATION_TERMS = [
+  "grant",
+  "apartment",
+  "apartments",
+  "lease",
+  "leasing",
+  "landlord",
+  "housing search",
+  "furnished finder",
+  "inquiry",
 ];
 
 const MONTHS: Record<string, number> = {
@@ -134,6 +166,7 @@ function addDays(date: Date, days: number) {
 function extractDates(text: string, fallbackYear?: number) {
   const dates = new Set<string>();
 
+  // Format: 2026-06-07 or 2026/06/07
   const numericDateRegex = /\b(20\d{2})[-/](0?[1-9]|1[0-2])[-/](0?[1-9]|[12]\d|3[01])\b/g;
   let numericMatch: RegExpExecArray | null;
   while ((numericMatch = numericDateRegex.exec(text)) !== null) {
@@ -143,15 +176,34 @@ function extractDates(text: string, fallbackYear?: number) {
   }
 
   const monthPattern = Object.keys(MONTHS).join("|");
-  const namedDateRegex = new RegExp(
+  // Format: "June 7, 2026" or "Jun 7 2026" (Month Day Year)
+  const monthFirstRegex = new RegExp(
     `\\b(${monthPattern})\\.?\\s+([0-3]?\\d)(?:st|nd|rd|th)?(?:,?\\s+(20\\d{2}))?\\b`,
     "gi"
   );
 
   let namedMatch: RegExpExecArray | null;
-  while ((namedMatch = namedDateRegex.exec(text)) !== null) {
+  while ((namedMatch = monthFirstRegex.exec(text)) !== null) {
     const monthName = namedMatch[1]?.toLowerCase().replace(".", "");
     const day = Number(namedMatch[2]);
+    const year = Number(namedMatch[3] ?? fallbackYear);
+    if (!monthName || !year || day < 1 || day > 31) continue;
+
+    const date = new Date(Date.UTC(year, MONTHS[monthName], day));
+    if (!Number.isNaN(date.getTime())) {
+      dates.add(dateOnly(date));
+    }
+  }
+
+  // Format: "7 June 2026" or "07 Jun 2026" (Day Month Year)
+  const dayFirstRegex = new RegExp(
+    `\\b([0-3]?\\d)(?:st|nd|rd|th)?\\s+(${monthPattern})\\.?(?:,?\\s+(20\\d{2}))?\\b`,
+    "gi"
+  );
+
+  while ((namedMatch = dayFirstRegex.exec(text)) !== null) {
+    const day = Number(namedMatch[1]);
+    const monthName = namedMatch[2]?.toLowerCase().replace(".", "");
     const year = Number(namedMatch[3] ?? fallbackYear);
     if (!monthName || !year || day < 1 || day > 31) continue;
 
@@ -176,6 +228,7 @@ export function scoreEmailForTrip(email: TripMatchEmail, trip: TripMatchTrip): T
   const from = email.from ?? "";
   const snippet = email.snippet ?? "";
   const body = email.body ?? "";
+  const subjectText = normalizeText(subject);
   const combined = normalizeText(`${subject} ${from} ${snippet} ${body}`);
   const receivedAt = email.received_at ? new Date(email.received_at) : null;
   const fallbackYear = receivedAt && !Number.isNaN(receivedAt.getTime())
@@ -184,10 +237,12 @@ export function scoreEmailForTrip(email: TripMatchEmail, trip: TripMatchTrip): T
 
   const reasons: string[] = [];
   let score = 0;
+  let strongTripSignal = false;
 
   const destination = normalizeText(trip.destination);
   if (destination && combined.includes(destination)) {
-    score += 0.32;
+    score += subjectText.includes(destination) ? 0.44 : 0.34;
+    strongTripSignal = true;
     reasons.push(`mentions destination "${trip.destination}"`);
   }
 
@@ -195,15 +250,20 @@ export function scoreEmailForTrip(email: TripMatchEmail, trip: TripMatchTrip): T
   const matchedDestinationTokens = destinationTokens.filter((token) => combined.includes(token));
   if (destinationTokens.length > 0 && matchedDestinationTokens.length > 0) {
     const ratio = matchedDestinationTokens.length / destinationTokens.length;
-    score += Math.min(0.22, ratio * 0.22);
+    score += Math.min(0.2, ratio * 0.2);
+    if (ratio >= 0.5) strongTripSignal = true;
     reasons.push(`matches destination terms: ${matchedDestinationTokens.join(", ")}`);
   }
 
   const nameTokens = tokenizeLocation(trip.name);
   const matchedNameTokens = nameTokens.filter((token) => combined.includes(token));
   if (nameTokens.length > 0 && matchedNameTokens.length > 0) {
-    score += Math.min(0.12, (matchedNameTokens.length / nameTokens.length) * 0.12);
-    reasons.push(`matches trip name terms: ${matchedNameTokens.join(", ")}`);
+    const ratio = matchedNameTokens.length / nameTokens.length;
+    score += Math.min(0.08, ratio * 0.08);
+    if (ratio >= 0.6) {
+      strongTripSignal = true;
+      reasons.push(`matches trip name terms: ${matchedNameTokens.join(", ")}`);
+    }
   }
 
   const tripStart = parseDate(trip.start_date);
@@ -223,6 +283,7 @@ export function scoreEmailForTrip(email: TripMatchEmail, trip: TripMatchTrip): T
 
     if (matchedDates.length > 0) {
       score += Math.min(0.36, 0.2 + matchedDates.length * 0.08);
+      strongTripSignal = true;
       reasons.push(`date overlaps trip window: ${matchedDates.join(", ")}`);
     } else {
       const closestDistance = Math.min(
@@ -233,7 +294,7 @@ export function scoreEmailForTrip(email: TripMatchEmail, trip: TripMatchTrip): T
       );
 
       if (Number.isFinite(closestDistance) && closestDistance <= 21) {
-        score += 0.12;
+        score += 0.06;
         reasons.push("date is close to trip window");
       }
     }
@@ -241,20 +302,31 @@ export function scoreEmailForTrip(email: TripMatchEmail, trip: TripMatchTrip): T
 
   const travelTerms = TRAVEL_TERMS.filter((term) => combined.includes(term));
   if (travelTerms.length > 0) {
-    score += Math.min(0.18, travelTerms.length * 0.035);
+    score += Math.min(0.16, travelTerms.length * 0.035);
     reasons.push(`looks like travel email: ${travelTerms.slice(0, 4).join(", ")}`);
   }
 
   const normalizedFrom = normalizeText(from);
   const senderSignals = TRAVEL_SENDERS.filter((sender) => normalizedFrom.includes(sender));
   if (senderSignals.length > 0) {
-    score += 0.1;
+    score += strongTripSignal ? 0.1 : 0.04;
     reasons.push(`travel sender: ${senderSignals[0]}`);
   }
 
-  if (receivedAt && tripStart && receivedAt <= addDays(tripStart, 3)) {
-    score += 0.04;
-    reasons.push("received before or near trip start");
+  const promoSignals = PROMOTIONAL_TERMS.filter((term) => combined.includes(term));
+  if (promoSignals.length > 0) {
+    score -= Math.min(0.28, promoSignals.length * 0.06);
+    reasons.push(`possible promo/newsletter: ${promoSignals.slice(0, 3).join(", ")}`);
+  }
+
+  const nonTravelSignals = NON_TRAVEL_CONFIRMATION_TERMS.filter((term) => combined.includes(term));
+  if (nonTravelSignals.length > 0) {
+    score -= Math.min(0.35, nonTravelSignals.length * 0.1);
+    reasons.push(`likely unrelated: ${nonTravelSignals.slice(0, 3).join(", ")}`);
+  }
+
+  if (!strongTripSignal && matchedDates.length === 0) {
+    score *= 0.45;
   }
 
   const finalScore = clampScore(score);

@@ -78,6 +78,7 @@ export function EditItemModal({ item, currency = "USD", onClose, onSaved, onDele
       return;
     }
 
+    onClose();
     onDeleted();
   }
 

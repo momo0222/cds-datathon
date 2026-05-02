@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ProposedTripChange } from "@/lib/types";
 import { normalizeReviewProposal, ReviewProposal } from "@/components/trip/proposalDraftStore";
 
@@ -23,21 +23,77 @@ type GmailMessage = {
   } | null;
 };
 
+type GmailAccount = {
+  id: string;
+  email: string | null;
+  expires_at: string | null;
+  scopes?: string[];
+};
+
 export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props) {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"paste" | "upload" | "gmail">("paste");
   const [emailBody, setEmailBody] = useState("");
   const [emailSubject, setEmailSubject] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [gmailConnected, setGmailConnected] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.sessionStorage.getItem(`trvl:gmail-connected:${tripId}`) === "true";
-  });
+  const [gmailConnected, setGmailConnected] = useState(false);
+  const [gmailHasReadScope, setGmailHasReadScope] = useState(false);
+  const [gmailAccounts, setGmailAccounts] = useState<GmailAccount[]>([]);
   const [gmailMessages, setGmailMessages] = useState<GmailMessage[]>([]);
   const [selectedMessageIds, setSelectedMessageIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
+  const [gmailStatusLoading, setGmailStatusLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ proposed: number } | null>(null);
+
+  async function refreshGmailStatus() {
+    setGmailStatusLoading(true);
+    try {
+      const res = await fetch("/api/oauth/google/status", { cache: "no-store" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setGmailConnected(Boolean(data.connected));
+        setGmailHasReadScope(Boolean(data.has_gmail_read_scope));
+        setGmailAccounts((data.accounts ?? []) as GmailAccount[]);
+      } else {
+        setGmailConnected(false);
+        setGmailHasReadScope(false);
+        setGmailAccounts([]);
+      }
+    } catch {
+      setGmailConnected(false);
+      setGmailHasReadScope(false);
+      setGmailAccounts([]);
+    } finally {
+      setGmailStatusLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!open) return;
+    refreshGmailStatus();
+  }, [open]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const gmailStatus = params.get("gmail");
+    if (gmailStatus === "connected") {
+      setOpen(true);
+      setActiveTab("gmail");
+      setResult({ proposed: 0 });
+      refreshGmailStatus();
+      const cleanUrl = `${window.location.pathname}${window.location.hash}`;
+      window.history.replaceState({}, "", cleanUrl);
+    }
+    if (gmailStatus === "error") {
+      setOpen(true);
+      setActiveTab("gmail");
+      setError("Gmail connection was cancelled or failed.");
+      const cleanUrl = `${window.location.pathname}${window.location.hash}`;
+      window.history.replaceState({}, "", cleanUrl);
+    }
+  }, []);
 
   function storeApiProposals(proposals: ProposedTripChange[]) {
     const normalized = proposals.map(normalizeReviewProposal);
@@ -46,8 +102,30 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
   }
 
   function connectGmail() {
-    window.sessionStorage.setItem(`trvl:gmail-connected:${tripId}`, "true");
     window.location.href = `/api/oauth/google/start?return_to=/trips/${tripId}`;
+  }
+
+  async function disconnectGmail() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/oauth/google/disconnect", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || "Could not disconnect Gmail.");
+      }
+      setGmailMessages([]);
+      setSelectedMessageIds(new Set());
+      await refreshGmailStatus();
+    } catch {
+      setError("Could not disconnect Gmail.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handlePasteImport() {
@@ -142,7 +220,6 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
 
       if (res.ok) {
         setGmailConnected(true);
-        window.sessionStorage.setItem(`trvl:gmail-connected:${tripId}`, "true");
         setGmailMessages((data.messages ?? []) as GmailMessage[]);
         setSelectedMessageIds(new Set());
         if ((data.messages ?? []).length === 0) {
@@ -153,9 +230,11 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
       }
 
       setError(data.error || "Gmail search failed. Connect Gmail and try again.");
+      if (data.needs_reconnect) {
+        setGmailHasReadScope(false);
+      }
       if (res.status === 401 || res.status === 403) {
-        setGmailConnected(false);
-        window.sessionStorage.removeItem(`trvl:gmail-connected:${tripId}`);
+        setGmailConnected(Boolean(data.needs_reconnect));
       }
       setLoading(false);
       return;
@@ -324,6 +403,34 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
 
         {activeTab === "gmail" && (
           <div className="flex flex-col gap-3">
+            <div className="rounded-2xl bg-sand-50 px-4 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-sand-900">
+                    {gmailConnected ? "Gmail connected" : "Gmail not connected"}
+                  </p>
+                  <p className="text-xs text-sand-400">
+                    {gmailConnected
+                      ? gmailAccounts.map((account) => account.email).filter(Boolean).join(", ") || "Ready to search confirmations"
+                      : "Connect Gmail to search for travel confirmations."}
+                  </p>
+                  {gmailConnected && !gmailHasReadScope && (
+                    <p className="mt-1 text-xs font-medium text-amber-700">
+                      Gmail is connected, but read permission is missing. Disconnect and reconnect Gmail.
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={refreshGmailStatus}
+                  disabled={gmailStatusLoading}
+                  className="btn-secondary px-3 py-2 text-xs disabled:opacity-50"
+                >
+                  {gmailStatusLoading ? "Checking..." : "Check"}
+                </button>
+              </div>
+            </div>
+
             <div className="flex flex-wrap gap-2">
               {!gmailConnected && (
                 <button
@@ -333,9 +440,18 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
                   Connect Gmail
                 </button>
               )}
+              {gmailConnected && (
+                <button
+                  onClick={disconnectGmail}
+                  disabled={loading}
+                  className="btn-secondary px-4 py-2 text-xs disabled:opacity-50"
+                >
+                  Disconnect
+                </button>
+              )}
               <button
                 onClick={handleGmailSearch}
-                disabled={loading}
+                disabled={loading || !gmailConnected || !gmailHasReadScope}
                 className="btn-primary px-4 py-2 text-xs disabled:opacity-50"
               >
                 Search Gmail

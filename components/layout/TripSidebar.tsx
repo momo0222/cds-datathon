@@ -8,9 +8,7 @@ interface Props {
 
 const TABS = [
   { key: "itinerary", label: "Itinerary", icon: "📋", path: "" },
-  { key: "travel",    label: "Travel",    icon: "✈️", path: "/travel" },
   { key: "budget",    label: "Budget",    icon: "💰", path: "/budget" },
-  { key: "food",      label: "Food",      icon: "🍽️", path: "/food" },
   { key: "share",     label: "Share",     icon: "👥", path: "/share" },
 ];
 
