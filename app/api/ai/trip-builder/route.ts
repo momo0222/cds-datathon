@@ -25,7 +25,7 @@ Hard requirements:
 - Output MUST match the schema described below.
 - Do not hallucinate exact addresses, booking references, or prices.
 - Provide realistic time ordering for each day; use 24-hour time HH:MM.
-- Use "suggestion" status for non-booked items.
+- All items should be treated as confirmed plans.
 - Keep titles concise.
 
 JSON schema to output:
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
       day_id,
       trip_id: (trip as any).id,
       type: i.type,
-      status: i.status,
+      status: "confirmed",
       title: i.title,
       detail: i.detail,
       time: i.time,
