@@ -143,20 +143,28 @@ export interface FlightOffer {
   price: number;
   currency: string;
 }
+export type ProposalSource = "gmail" | "outlook" | "upload" | "paste" | "agent";
 
-type ProposedTripChange = {
-  source: "gmail" | "outlook" | "upload" | "agent" | "manual";
-  type: "flight" | "hotel" | "restaurant" | "activity" | "transport" | "expense" | "note";
+export interface ProposedTripChange {
+  id?: string;
+  trip_id: string;
+  source: ProposalSource;
+  source_ref?: string | null;
+  type: ItemType;
   title: string;
-  startDateTime?: string;
-  endDateTime?: string;
-  locationName?: string;
-  address?: string;
-  vendor?: string;
-  confirmationCode?: string;
+  detail?: string | null;
+  day_date?: string | null;
+  time?: string | null;
+  end_time?: string | null;
+  location_name?: string | null;
+  booking_ref?: string | null;
+  booking_url?: string | null;
   cost?: number;
   currency?: string;
+  notes?: string | null;
   confidence: number;
   warnings: string[];
-  rawSummary?: string;
-};
+  action: "create" | "update" | "move" | "delete";
+  target_item_id?: string | null;
+}
+
