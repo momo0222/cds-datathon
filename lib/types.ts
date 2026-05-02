@@ -143,7 +143,7 @@ export interface FlightOffer {
   price: number;
   currency: string;
 }
-export type ProposalSource = "gmail" | "outlook" | "upload" | "paste" | "agent";
+export type ProposalSource = "gmail" | "upload" | "paste" | "agent";
 
 export interface ProposedTripChange {
   id?: string;
