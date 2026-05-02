@@ -85,7 +85,13 @@ export default async function DashboardPage() {
               </p>
             </div>
           ) : (
-            allTrips.map((trip) => <TripCard key={trip.id} trip={trip as any} />)
+            allTrips.map((trip) => (
+              <TripCard
+                key={trip.id}
+                trip={trip as any}
+                canDelete={trip.owner_id === user.id}
+              />
+            ))
           )}
         </div>
       </main>
