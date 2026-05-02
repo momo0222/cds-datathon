@@ -79,6 +79,53 @@ export async function askAIJSON<T>(req: AIRequest): Promise<T> {
 }
 
 /*
+Vision request — sends an image alongside a text prompt.
+Used for extracting travel data from screenshots and photos.
+Same JSON mode as askAIJSON so the output is typed and parseable.
+*/
+export interface AIVisionRequest extends AIRequest {
+  imageBase64: string
+  mimeType: string
+}
+
+export async function askAIVision<T>(req: AIVisionRequest): Promise<T> {
+  const response = await openai.chat.completions.create({
+    model: MODELS[req.model ?? "full"],
+    temperature: req.temperature ?? 0,
+    max_tokens: req.maxTokens ?? 1800,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: req.system },
+      {
+        role: "user",
+        content: [
+          { type: "text", text: req.prompt },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:${req.mimeType};base64,${req.imageBase64}`,
+              detail: "high",
+            },
+          },
+        ],
+      },
+    ],
+  })
+
+  const text = response.choices?.[0]?.message?.content ?? "{}"
+  const finishReason = response.choices?.[0]?.finish_reason
+
+  try {
+    return JSON.parse(text) as T
+  } catch {
+    if (finishReason === "length") {
+      throw new Error("AI response was truncated (token limit reached).")
+    }
+    throw new Error("AI returned invalid JSON from vision request")
+  }
+}
+
+/*
 Optional: safe JSON parser fallback
 */
 export function parseJSON<T>(text: string): T {

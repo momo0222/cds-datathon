@@ -7,15 +7,14 @@
 // Person A's approval endpoint then writes approved proposals
 // into itinerary_items.
 //
-// Supported now:  .txt, .html
+// Supported now:  .txt, .html, .png, .jpg, .webp (AI vision)
 // Coming next:    .pdf
-// Coming later:   images (AI vision)
 // =============================================================
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminSupabase } from "@/lib/supabase-admin";
-import { askAIJSON } from "@/lib/ai";
+import { askAIJSON, askAIVision } from "@/lib/ai";
 import { ProposedTripChange } from "@/lib/types";
 
 const ALLOWED_TYPES = [
@@ -164,18 +163,42 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // --- Extract text content from file ---
-  // PDF and image support coming in the next step.
-  let extractedText: string;
+    // --- Extract and call AI based on file type ---
+  const basePrompt = `Trip ID: ${trip_id}\nDefault currency: ${default_currency}\nFile name: ${file.name}`;
+
+  let ai: AIOut;
+  let confidence: number;
+
+  const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
   if (file.type === "text/plain") {
-    // Plain text — read directly, no processing needed.
-    extractedText = await file.text();
+    const extractedText = await file.text();
+    if (!extractedText.trim()) {
+      return NextResponse.json({ error: "File appears to be empty." }, { status: 400 });
+    }
+    ai = await askAIJSON<AIOut>({
+      system: SYSTEM_PROMPT,
+      prompt: `${basePrompt}\n\nContent:\n${extractedText}`,
+      model: "full",
+      temperature: 0,
+      maxTokens: 1800,
+    });
+    confidence = 0.85;
 
   } else if (file.type === "text/html") {
-    // HTML — strip tags first so the AI gets clean readable text.
-    const raw = await file.text();
-    extractedText = stripHtml(raw);
+    // Strip tags so the AI gets clean readable text instead of raw markup.
+    const extractedText = stripHtml(await file.text());
+    if (!extractedText.trim()) {
+      return NextResponse.json({ error: "Could not extract any text from this HTML file." }, { status: 400 });
+    }
+    ai = await askAIJSON<AIOut>({
+      system: SYSTEM_PROMPT,
+      prompt: `${basePrompt}\n\nContent:\n${extractedText}`,
+      model: "full",
+      temperature: 0,
+      maxTokens: 1800,
+    });
+    confidence = 0.85;
 
   } else if (file.type === "application/pdf") {
     return NextResponse.json(
@@ -183,45 +206,31 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
 
+  } else if (IMAGE_TYPES.includes(file.type)) {
+    // Convert image to base64 so OpenAI vision can read it directly.
+    const imageBase64 = Buffer.from(await file.arrayBuffer()).toString("base64");
+    ai = await askAIVision<AIOut>({
+      system: SYSTEM_PROMPT,
+      prompt: `${basePrompt}\n\nExtract all travel confirmation details visible in this image.`,
+      imageBase64,
+      mimeType: file.type,
+      model: "full",
+      temperature: 0,
+      maxTokens: 1800,
+    });
+    // Slightly lower confidence — images may be partially cropped or blurry.
+    confidence = 0.8;
+
   } else {
-    // image/png, image/jpeg, image/webp
-    return NextResponse.json(
-      { error: "Image extraction coming soon." },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Unsupported file type." }, { status: 400 });
   }
-
-  if (!extractedText.trim()) {
-    return NextResponse.json(
-      { error: "Could not extract any text from this file." },
-      { status: 400 }
-    );
-  }
-
-  // --- Call AI ---
-  const prompt = `Trip ID: ${trip_id}\nDefault currency: ${default_currency}\n\nFile name: ${file.name}\n\nContent:\n${extractedText}`;
-
-  const ai = await askAIJSON<AIOut>({
-    system: SYSTEM_PROMPT,
-    prompt,
-    model: "full",
-    temperature: 0,
-    maxTokens: 1800,
-  });
 
   // --- Map AI output to ProposedTripChange[] ---
-  // confidence: 0.85 for uploads — slightly lower than paste (0.9) because
-  // file content can have formatting noise even after stripping.
   const proposals: ProposedTripChange[] = ai.items.map((item) => {
     const warnings: string[] = [];
 
-    if (!item.day_date) {
-      warnings.push("No date found — assign manually");
-    }
-
-    if (!item.cost || item.cost === 0) {
-      warnings.push("No price found");
-    }
+    if (!item.day_date) warnings.push("No date found — assign manually");
+    if (!item.cost || item.cost === 0) warnings.push("No price found");
 
     return {
       trip_id,
@@ -239,7 +248,7 @@ export async function POST(request: NextRequest) {
       cost: item.cost ?? 0,
       currency: item.currency || default_currency,
       notes: item.notes,
-      confidence: 0.85,
+      confidence,
       warnings,
       action: "create",
       target_item_id: null,

@@ -2,6 +2,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { TripCard } from "@/components/trip/TripCard";
 import { NewTripModal } from "@/components/trip/NewTripModal";
 import { TripBuilderPanel } from "@/components/trip/TripBuilderPanel";
+import { DashboardTurtlePanel } from "@/components/trip/DashboardTurtlePanel";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminSupabase } from "@/lib/supabase-admin";
 
@@ -95,6 +96,7 @@ export default async function DashboardPage() {
           )}
         </div>
       </main>
+      <DashboardTurtlePanel />
     </>
   );
 }
