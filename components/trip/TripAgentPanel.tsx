@@ -267,11 +267,14 @@ export function TripAgentPanel({ trip, onProposals }: Props) {
         aria-label="Open trip agent"
         className="relative flex h-14 w-14 items-center justify-center rounded-full bg-moss text-2xl shadow-xl shadow-sand-300/50 transition-transform hover:scale-105 active:scale-95"
       >
-        <span className={flowerPhase === "chomp" ? "scale-110 transition-transform duration-150" : "transition-transform duration-300"}>
+        <span className={flowerPhase === "chomp" ? "translate-x-0.5 transition-transform duration-150" : "transition-transform duration-300"}>
           🐢
         </span>
         {flowerPhase === "chomp" && (
-          <span className="absolute left-2 top-5 h-2 w-3 rounded-full bg-sand-900/70" aria-hidden="true" />
+          <span
+            className="absolute left-3 top-5 h-2 w-2 rounded-br-full border-b-2 border-r-2 border-sand-900/60"
+            aria-hidden="true"
+          />
         )}
         {flowerPhase !== "idle" && (
           <span

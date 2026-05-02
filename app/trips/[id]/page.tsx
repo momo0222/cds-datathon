@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { TripSidebar } from "@/components/layout/TripSidebar";
 import { ItineraryView } from "@/components/trip/ItineraryView";
+import { DeleteTripButton } from "@/components/trip/DeleteTripButton";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminSupabase } from "@/lib/supabase-admin";
 import { getTripRole } from "@/lib/check-role";
@@ -63,10 +64,17 @@ export default async function TripItineraryPage({ params: paramsPromise }: Props
       <div className="flex">
         <TripSidebar tripId={params.id} activeTab="itinerary" />
         <main className="flex-1 max-w-3xl mx-auto px-6 py-8">
-          <h1 className="font-display text-3xl font-bold text-sand-900 mb-2">
-            {trip.name}
-          </h1>
-          <p className="text-sand-400 text-sm mb-8">{trip.destination}</p>
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h1 className="font-display text-3xl font-bold text-sand-900 mb-2">
+                {trip.name}
+              </h1>
+              <p className="text-sand-400 text-sm">{trip.destination}</p>
+            </div>
+            {userRole === "owner" && (
+              <DeleteTripButton tripId={params.id} tripName={trip.name} />
+            )}
+          </div>
 
           <ItineraryView trip={trip as any} canEdit={userRole === "owner" || userRole === "editor"} />
         </main>
