@@ -7,14 +7,14 @@
 // Person A's approval endpoint then writes approved proposals
 // into itinerary_items.
 //
-// Supported now:  .txt, .html, .png, .jpg, .webp (AI vision)
-// Coming next:    .pdf
+// Supported now:  .txt, .html, .pdf, .png, .jpg, .webp (AI vision)
 // =============================================================
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminSupabase } from "@/lib/supabase-admin";
 import { askAIJSON, askAIVision } from "@/lib/ai";
+import { extractText } from "unpdf";
 import { ProposedTripChange } from "@/lib/types";
 
 const ALLOWED_TYPES = [
@@ -201,10 +201,24 @@ export async function POST(request: NextRequest) {
     confidence = 0.85;
 
   } else if (file.type === "application/pdf") {
-    return NextResponse.json(
-      { error: "PDF extraction coming soon — try pasting the text instead." },
-      { status: 400 }
+    const { text: pdfText } = await extractText(
+      new Uint8Array(await file.arrayBuffer()),
+      { mergePages: true }
     );
+    if (!pdfText?.trim()) {
+      return NextResponse.json(
+        { error: "This PDF has no readable text — it may be a scan. Try a different file." },
+        { status: 400 }
+      );
+    }
+    ai = await askAIJSON<AIOut>({
+      system: SYSTEM_PROMPT,
+      prompt: `${basePrompt}\n\nContent:\n${pdfText}`,
+      model: "full",
+      temperature: 0,
+      maxTokens: 1800,
+    });
+    confidence = 0.82;
 
   } else if (IMAGE_TYPES.includes(file.type)) {
     // Convert image to base64 so OpenAI vision can read it directly.
