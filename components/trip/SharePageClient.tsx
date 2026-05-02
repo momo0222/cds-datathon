@@ -148,9 +148,12 @@ export function SharePageClient({ tripId, currentUserId, isOwner }: Props) {
   return (
     <>
       {/* Invite section */}
-      <div className="card p-6 mb-6 animate-slide-up">
-        <h3 className="font-display text-lg font-semibold mb-4">Invite People</h3>
-        <form onSubmit={handleInvite} className="flex gap-3">
+      <div className="mb-6 animate-slide-up rounded-lg border border-sand-100 bg-white p-6 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_18px_44px_rgba(29,158,117,0.08)]">
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ocean-dark">
+          Invite
+        </p>
+        <h3 className="mb-4 font-display text-xl font-semibold text-sand-900">Invite People</h3>
+        <form onSubmit={handleInvite} className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
           <input
             type="email"
             value={inviteEmail}
@@ -171,16 +174,19 @@ export function SharePageClient({ tripId, currentUserId, isOwner }: Props) {
             {loading ? "Sending..." : "Send Invite"}
           </button>
         </form>
-        {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
-        {success && <p className="text-sm text-emerald-600 mt-3">{success}</p>}
+        {error && <p className="mt-3 text-sm font-medium text-amber-dark">{error}</p>}
+        {success && <p className="mt-3 text-sm font-medium text-ocean-dark">{success}</p>}
       </div>
 
       {/* Share link section */}
-      <div className="card p-6 mb-6 animate-slide-up stagger-1">
-        <h3 className="font-display text-lg font-semibold mb-4">Share Link</h3>
+      <div className="mb-6 animate-slide-up rounded-lg border border-ocean/15 bg-white p-6 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_18px_44px_rgba(29,158,117,0.09)] stagger-1">
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ocean-dark">
+          Public view
+        </p>
+        <h3 className="mb-4 font-display text-xl font-semibold text-sand-900">Share Link</h3>
         {shareLink ? (
           <div className="flex flex-col gap-3">
-            <div className="flex gap-3">
+            <div className="grid gap-3 md:grid-cols-[1fr_auto]">
               <div className="input flex-1 bg-sand-50 text-sand-600 font-mono text-sm flex items-center overflow-hidden">
                 {window.location.origin}/shared/{shareLink.slug}
               </div>
@@ -188,20 +194,20 @@ export function SharePageClient({ tripId, currentUserId, isOwner }: Props) {
                 {copied ? "Copied!" : "Copy Link"}
               </button>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-l-[3px] border-coral bg-sand-50 px-4 py-3">
               <label className="flex items-center gap-2 text-sm text-sand-600 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={shareLink.allow_suggestions}
                   onChange={handleToggleSuggestions}
-                  className="rounded border-sand-300"
+                  className="rounded-sm border-sand-300 accent-ocean"
                 />
                 Allow viewers to add suggestions
               </label>
               {isOwner && (
                 <button
                   onClick={handleDeleteLink}
-                  className="text-xs text-red-500 hover:text-red-700"
+                  className="text-xs font-semibold text-amber-dark hover:text-sand-900"
                 >
                   Disable link
                 </button>
@@ -216,8 +222,11 @@ export function SharePageClient({ tripId, currentUserId, isOwner }: Props) {
       </div>
 
       {/* Members list */}
-      <div className="card p-6 animate-slide-up stagger-2">
-        <h3 className="font-display text-lg font-semibold mb-4">
+      <div className="animate-slide-up rounded-lg border border-sand-100 bg-white p-6 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_18px_44px_rgba(29,158,117,0.08)] stagger-2">
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-sand-400">
+          Collaborators
+        </p>
+        <h3 className="mb-4 font-display text-xl font-semibold text-sand-900">
           Trip Members ({members.length})
         </h3>
         <div className="flex flex-col gap-3">
@@ -228,9 +237,9 @@ export function SharePageClient({ tripId, currentUserId, isOwner }: Props) {
             return (
               <div
                 key={m.id}
-                className="flex items-center gap-3 p-3 rounded-xl bg-sand-50/50 hover:bg-sand-50 transition-colors"
+                className="flex items-center gap-3 rounded-sm border-l-[3px] border-transparent bg-sand-50/50 p-3 transition-colors hover:border-ocean/30 hover:bg-sand-50"
               >
-                <div className="w-10 h-10 rounded-full bg-sand-200 flex items-center justify-center text-sm font-semibold text-sand-600 shrink-0">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-sand-200 text-sm font-semibold text-sand-600">
                   {getInitials(m.profile?.full_name)}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -243,7 +252,7 @@ export function SharePageClient({ tripId, currentUserId, isOwner }: Props) {
                   </p>
                 </div>
                 <span
-                  className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}
+                  className={`rounded-sm px-2.5 py-0.5 text-xs font-medium ${badge.bg} ${badge.text}`}
                 >
                   {badge.label}
                 </span>
@@ -261,7 +270,7 @@ export function SharePageClient({ tripId, currentUserId, isOwner }: Props) {
                     </select>
                     <button
                       onClick={() => handleRemoveMember(m.id)}
-                      className="text-red-400 hover:text-red-600 text-xs px-1"
+                      className="px-1 text-xs font-semibold text-amber-dark hover:text-sand-900"
                       title="Remove member"
                     >
                       ✕

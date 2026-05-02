@@ -73,19 +73,29 @@ export function TripBuilderPanel({ onCreated }: Props) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 text-amber-700 text-sm font-semibold hover:from-amber-500/20 hover:to-coral/20 transition-all"
+        className="w-full border-l-[3px] border-coral bg-white px-5 py-4 text-left shadow-[0_1px_2px_rgba(24,40,28,0.04),0_16px_36px_rgba(239,159,39,0.10)] transition-all hover:-translate-y-0.5 hover:shadow-[0_2px_6px_rgba(24,40,28,0.06),0_20px_44px_rgba(239,159,39,0.14)]"
       >
-        
-        AI Trip Builder
+        <span className="block font-mono text-[11px] uppercase tracking-[0.18em] text-amber-dark">
+          AI Trip Builder
+        </span>
+        <span className="mt-2 block font-display text-2xl font-semibold leading-tight text-sand-900">
+          Draft a trip from one prompt
+        </span>
+        <span className="mt-3 block text-sm leading-6 text-sand-500">
+          Give TRVL a destination, dates, and style. Review the itinerary after it builds.
+        </span>
       </button>
     );
   }
 
   return (
-    <div className="card p-6 mb-6 animate-slide-up border-2 border-amber-500/20">
+    <div className="mb-6 animate-slide-up border border-amber/25 border-l-[3px] border-l-coral bg-white p-5 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_18px_44px_rgba(239,159,39,0.11)]">
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h3 className="font-display text-lg font-bold text-sand-900 flex items-center gap-2">
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-dark">
+            AI Trip Builder
+          </p>
+          <h3 className="font-display text-2xl font-semibold text-sand-900 flex items-center gap-2">
             AI Trip Builder
           </h3>
           <p className="text-sand-400 text-xs mt-0.5">
@@ -94,7 +104,7 @@ export function TripBuilderPanel({ onCreated }: Props) {
         </div>
         <button
           onClick={() => { setOpen(false); setError(null); setStatus(""); }}
-          className="text-sand-400 hover:text-sand-600 text-sm"
+          className="rounded-sm px-2 py-1 text-sm text-sand-400 hover:bg-sand-50 hover:text-sand-700"
         >
           Close
         </button>
@@ -195,12 +205,12 @@ export function TripBuilderPanel({ onCreated }: Props) {
           />
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm font-medium text-amber-dark">{error}</p>}
 
         {status && !error && (
-          <div className="bg-amber-50 text-amber-700 rounded-xl px-4 py-3 text-sm font-medium flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-coral-light px-4 py-3 text-sm font-medium text-amber-dark">
             {loading && (
-              <span className="animate-spin inline-block w-4 h-4 border-2 border-amber-400/30 border-t-amber-600 rounded-full" />
+              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-amber/30 border-t-amber-dark" />
             )}
             {status}
           </div>

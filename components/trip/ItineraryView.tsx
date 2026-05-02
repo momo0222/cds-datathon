@@ -57,7 +57,9 @@ export function ItineraryView({ trip, canEdit = true }: Props) {
             accentColor={trip.color}
           />
         ) : (
-          <div className="card p-4 text-sand-400 text-sm">No days yet.</div>
+          <div className="border-l-[3px] border-ocean bg-white px-5 py-4 text-sm text-sand-500 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_18px_45px_rgba(29,158,117,0.08)]">
+            No days yet.
+          </div>
         )}
       </div>
 
@@ -80,8 +82,8 @@ export function ItineraryView({ trip, canEdit = true }: Props) {
 
       <div className="flex flex-col gap-3 mt-4">
         {items.length === 0 && activeDay && (
-          <div className="card p-8 text-center">
-            <p className="text-sand-400 text-sm">No items yet for this day. Add your first one!</p>
+          <div className="border-l-[3px] border-coral bg-white px-5 py-8 text-center shadow-[0_1px_2px_rgba(24,40,28,0.04),0_18px_45px_rgba(239,159,39,0.08)]">
+            <p className="text-sm text-sand-500">No items yet for this day. Add your first one.</p>
           </div>
         )}
 
@@ -93,7 +95,7 @@ export function ItineraryView({ trip, canEdit = true }: Props) {
           <button
             onClick={() => setShowAdd(true)}
             disabled={!activeDay}
-            className="w-full py-4 rounded-2xl border-2 border-dashed border-sand-200 text-sand-400 text-sm font-medium hover:border-ocean hover:text-ocean transition-colors disabled:opacity-60"
+            className="w-full rounded-sm border-2 border-dashed border-sand-200 py-4 text-sm font-medium text-sand-400 transition-colors hover:border-ocean hover:text-ocean disabled:opacity-60"
           >
             + Add flight, hotel, activity, or restaurant
           </button>

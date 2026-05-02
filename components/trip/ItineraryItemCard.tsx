@@ -14,13 +14,13 @@ export function ItineraryItemCard({ item, onClick }: Props) {
     <button
       onClick={onClick}
       className={cn(
-        "w-full flex gap-3.5 p-4 rounded-2xl border transition-all duration-200 text-left",
+        "flex w-full gap-3.5 rounded-sm border p-4 text-left transition-all duration-200",
         typeCfg.bgClass,
-        "border-transparent hover:translate-x-1 hover:shadow-md"
+        "border-sand-100 hover:translate-x-1 hover:shadow-[0_1px_2px_rgba(24,40,28,0.04),0_14px_32px_rgba(29,158,117,0.10)]"
       )}
     >
       {/* Icon */}
-      <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm flex-shrink-0">
+      <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-sm bg-white text-xl shadow-[0_1px_2px_rgba(24,40,28,0.05)]">
         {typeCfg.icon}
       </div>
 

@@ -64,8 +64,11 @@ function CategoryBreakdown({
   const sorted = Object.entries(grouped).sort(([, a], [, b]) => b.total - a.total);
 
   return (
-    <div className="card p-5 mb-6">
-      <h3 className="font-display text-lg font-semibold mb-3">Spending by Category</h3>
+    <div className="mb-6 rounded-lg border border-sand-100 bg-white p-5 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_18px_44px_rgba(29,158,117,0.08)]">
+      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ocean-dark">
+        Breakdown
+      </p>
+      <h3 className="mb-3 font-display text-xl font-semibold text-sand-900">Spending by Category</h3>
       <div className="flex flex-col gap-1">
         {sorted.map(([cat, { total, items }]) => {
           const isOpen = expanded === cat;
@@ -73,13 +76,13 @@ function CategoryBreakdown({
             <div key={cat}>
               <button
                 onClick={() => setExpanded(isOpen ? null : cat)}
-                className="w-full flex items-center gap-3 py-2.5 px-1 rounded-lg hover:bg-sand-50 transition-colors"
+                className="flex w-full items-center gap-3 rounded-sm px-1 py-2.5 transition-colors hover:bg-sand-50"
               >
                 <span className="text-base w-6 text-center">{CATEGORY_ICONS[cat] ?? "📦"}</span>
                 <span className="text-sm font-medium text-sand-700 capitalize w-20 text-left">{cat}</span>
-                <div className="flex-1 h-2 bg-sand-100 rounded-full overflow-hidden">
+                <div className="h-2 flex-1 overflow-hidden bg-sand-100">
                   <div
-                    className="h-full bg-ocean/60 rounded-full"
+                    className="h-full bg-ocean/60"
                     style={{ width: `${totalSpent > 0 ? (total / totalSpent) * 100 : 0}%` }}
                   />
                 </div>
@@ -93,7 +96,7 @@ function CategoryBreakdown({
                   {items
                     .sort((a, b) => b.amt - a.amt)
                     .map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-sand-50/80">
+                      <div key={idx} className="flex items-center justify-between rounded-sm px-2 py-1.5 hover:bg-sand-50/80">
                         <div className="min-w-0 flex-1">
                           <p className="text-sm text-sand-700 truncate">{item.name}</p>
                           <p className="text-[10px] text-sand-400">{item.source}</p>
@@ -198,9 +201,8 @@ export function BudgetPageClient({ tripId, canEdit }: Props) {
 
   return (
     <>
-      {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="card p-5">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-lg border border-sand-100 bg-white p-5 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_16px_36px_rgba(29,158,117,0.07)]">
           <p className="font-mono text-xs text-sand-400 uppercase tracking-wide mb-1">Budget</p>
           {editingBudget ? (
             <form
@@ -218,7 +220,7 @@ export function BudgetPageClient({ tripId, canEdit }: Props) {
               }}
               className="flex items-baseline gap-1"
             >
-              <span className="font-display text-2xl font-bold text-sand-900">{currency}</span>
+              <span className="font-display text-2xl font-semibold text-sand-900">{currency}</span>
               <input
                 type="number"
                 step="0.01"
@@ -236,13 +238,13 @@ export function BudgetPageClient({ tripId, canEdit }: Props) {
                   setEditingBudget(false);
                 }}
                 onKeyDown={(e) => { if (e.key === "Escape") setEditingBudget(false); }}
-                className="font-display text-2xl font-bold text-sand-900 bg-transparent border-b-2 border-ocean outline-none w-28 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                className="w-28 appearance-none border-b-2 border-ocean bg-transparent font-display text-2xl font-semibold text-sand-900 outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 autoFocus
               />
             </form>
           ) : (
             <p
-              className={`font-display text-2xl font-bold text-sand-900 ${canEdit ? "cursor-pointer group" : ""}`}
+              className={`font-display text-2xl font-semibold text-sand-900 ${canEdit ? "cursor-pointer group" : ""}`}
               onClick={() => {
                 if (!canEdit) return;
                 setBudgetInput(String(tripBudget));
@@ -254,18 +256,18 @@ export function BudgetPageClient({ tripId, canEdit }: Props) {
             </p>
           )}
         </div>
-        <div className="card p-5">
+        <div className="rounded-lg border border-sand-100 bg-white p-5 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_16px_36px_rgba(29,158,117,0.07)]">
           <p className="font-mono text-xs text-sand-400 uppercase tracking-wide mb-1">Spent</p>
-          <p className="font-display text-2xl font-bold text-sand-900">
+          <p className="font-display text-2xl font-semibold text-sand-900">
             {currency} {totalSpent.toFixed(2)}
           </p>
           <p className="text-xs text-sand-400 mt-1">
             {expenses.length} expenses + {itemCosts.filter(i => i.cost > 0).length} booked items
           </p>
         </div>
-        <div className="card p-5">
+        <div className="rounded-lg border border-sand-100 bg-white p-5 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_16px_36px_rgba(29,158,117,0.07)]">
           <p className="font-mono text-xs text-sand-400 uppercase tracking-wide mb-1">Remaining</p>
-          <p className={`font-display text-2xl font-bold ${remaining >= 0 ? "text-moss" : "text-red-600"}`}>
+          <p className={`font-display text-2xl font-semibold ${remaining >= 0 ? "text-ocean-dark" : "text-amber-dark"}`}>
             {currency} {remaining.toFixed(2)}
           </p>
           <p className="text-xs text-sand-400 mt-1">
@@ -276,14 +278,14 @@ export function BudgetPageClient({ tripId, canEdit }: Props) {
 
       {/* Progress bar */}
       {tripBudget > 0 && (
-        <div className="card p-4 mb-6">
+        <div className="mb-6 rounded-lg border border-sand-100 bg-white p-4 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_14px_34px_rgba(29,158,117,0.07)]">
           <div className="flex justify-between text-xs text-sand-400 mb-2">
             <span>{pct.toFixed(0)}% used</span>
             <span>{currency} {totalSpent.toFixed(2)} / {tripBudget.toLocaleString()}</span>
           </div>
-          <div className="w-full h-3 bg-sand-100 rounded-full overflow-hidden">
+          <div className="h-3 w-full overflow-hidden bg-sand-100">
             <div
-              className={`h-full rounded-full transition-all duration-500 ${pct > 90 ? "bg-red-500" : pct > 70 ? "bg-amber-400" : "bg-moss"}`}
+              className={`h-full transition-all duration-500 ${pct > 90 ? "bg-amber-dark" : pct > 70 ? "bg-amber" : "bg-moss"}`}
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -291,9 +293,14 @@ export function BudgetPageClient({ tripId, canEdit }: Props) {
       )}
 
       {/* AI Analysis */}
-      <div className="card p-5 mb-6">
+      <div className="mb-6 rounded-lg border border-ocean/15 bg-white p-5 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_18px_44px_rgba(29,158,117,0.09)]">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-display text-lg font-semibold">AI Budget Analysis</h3>
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ocean-dark">
+              Advisor
+            </p>
+            <h3 className="font-display text-xl font-semibold text-sand-900">AI Budget Analysis</h3>
+          </div>
           <button
             onClick={handleAnalyze}
             disabled={analyzing}
@@ -303,7 +310,7 @@ export function BudgetPageClient({ tripId, canEdit }: Props) {
           </button>
         </div>
         {analysis && (
-          <div className="text-sm text-sand-700 leading-relaxed whitespace-pre-wrap bg-sand-50 rounded-xl p-4">
+          <div className="whitespace-pre-wrap rounded-sm bg-sand-50 p-4 text-sm leading-relaxed text-sand-700">
             {analysis}
           </div>
         )}
@@ -325,11 +332,16 @@ export function BudgetPageClient({ tripId, canEdit }: Props) {
       )}
 
       {/* Expense list */}
-      <div className="card p-5">
+      <div className="rounded-lg border border-sand-100 bg-white p-5 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_18px_44px_rgba(29,158,117,0.08)]">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-lg font-semibold">
-            Expenses ({expenses.length})
-          </h3>
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-sand-400">
+              Ledger
+            </p>
+            <h3 className="font-display text-xl font-semibold text-sand-900">
+              Expenses ({expenses.length})
+            </h3>
+          </div>
           {canEdit && (
             <button onClick={() => setShowAdd(!showAdd)} className="btn-primary text-sm">
               {showAdd ? "Cancel" : "+ Add Expense"}
@@ -338,7 +350,7 @@ export function BudgetPageClient({ tripId, canEdit }: Props) {
         </div>
 
         {showAdd && (
-          <form onSubmit={handleAdd} className="flex flex-col gap-3 mb-4 p-4 bg-sand-50 rounded-xl">
+          <form onSubmit={handleAdd} className="mb-4 flex flex-col gap-3 rounded-sm bg-sand-50 p-4">
             <div className="flex gap-3">
               <select value={cat} onChange={e => setCat(e.target.value)} className="input w-36">
                 {Object.entries(CATEGORY_ICONS).map(([k, v]) => (
@@ -373,7 +385,7 @@ export function BudgetPageClient({ tripId, canEdit }: Props) {
                 {saving ? "Saving..." : "Add"}
               </button>
             </div>
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm font-medium text-amber-dark">{error}</p>}
           </form>
         )}
 
@@ -382,7 +394,7 @@ export function BudgetPageClient({ tripId, canEdit }: Props) {
         ) : (
           <div className="flex flex-col gap-2">
             {expenses.map(exp => (
-              <div key={exp.id} className="flex items-center gap-3 p-3 rounded-xl bg-sand-50/50 hover:bg-sand-50 transition-colors">
+              <div key={exp.id} className="flex items-center gap-3 rounded-sm bg-sand-50/50 p-3 transition-colors hover:bg-sand-50">
                 <span className="text-base">{CATEGORY_ICONS[exp.category] ?? "📦"}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-sand-900 truncate">{exp.description}</p>

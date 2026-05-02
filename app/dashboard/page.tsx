@@ -18,7 +18,7 @@ export default async function DashboardPage() {
     return (
       <>
         <Navbar />
-        <main className="max-w-4xl mx-auto px-6">
+        <main className="mx-auto max-w-6xl px-6">
           <div className="pt-12">
             <div className="card p-6 text-sand-400 text-sm">Please sign in.</div>
           </div>
@@ -60,41 +60,69 @@ export default async function DashboardPage() {
   return (
     <>
       <Navbar />
-      <main className="max-w-4xl mx-auto px-6">
-        {/* Header */}
-        <header className="pt-12 pb-8 animate-fade-in">
-          <p className="font-mono text-xs text-sand-400 uppercase tracking-[0.15em] mb-2">
-            ✦ Your Trips
-          </p>
-          <div className="flex justify-between items-start">
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-sand-900 leading-tight">
-              Where to<br />next?
-            </h1>
-            <NewTripModal defaultCurrency="USD" />
+      <main className="mx-auto max-w-6xl px-6">
+        <header className="relative overflow-hidden pb-10 pt-12 animate-fade-in">
+          <div className="absolute left-1/2 top-0 -z-10 h-48 w-screen -translate-x-1/2 bg-[linear-gradient(135deg,rgba(29,158,117,0.13),rgba(250,199,117,0.20)_45%,rgba(246,249,247,0)_76%)] [mask-image:linear-gradient(to_bottom,black,transparent)]" />
+          <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+            <div>
+              <p className="mb-3 font-mono text-xs uppercase tracking-[0.18em] text-ocean-dark">
+                TRVL workspace
+              </p>
+              <h1 className="font-display text-5xl font-semibold leading-[0.95] text-sand-900 md:text-7xl">
+                Plan the trip.
+                <br />
+                Keep the receipts.
+              </h1>
+              <p className="mt-5 max-w-2xl text-base leading-7 text-sand-600">
+                Build new itineraries, import confirmations, and keep every decision reviewable before it lands on the schedule.
+              </p>
+            </div>
+            <div className="flex flex-col items-start gap-4 border-l-[3px] border-coral px-5 py-3 lg:items-end lg:border-l-0 lg:border-r-[3px] lg:text-right">
+              <p className="max-w-xs text-sm leading-6 text-sand-500">
+                Start blank when you know the plan, or let TRVL sketch the first route.
+              </p>
+              <NewTripModal defaultCurrency="USD" />
+            </div>
           </div>
         </header>
 
-        {/* AI Trip Builder */}
-        <TripBuilderPanel />
+        <section className="grid gap-10 pb-20 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
+          <aside className="lg:sticky lg:top-28">
+            <TripBuilderPanel />
+          </aside>
 
-        {/* Trip cards */}
-        <div className="flex flex-col gap-4 pb-16 mt-4">
-          {allTrips.length === 0 ? (
-            <div className="card p-6 animate-slide-up">
-              <p className="text-sand-400 text-sm">
-                🌟 Ready to plan your next adventure!
-              </p>
+          <div className="min-w-0">
+            <div className="mb-5 flex items-end justify-between gap-4 border-b border-sand-200 pb-3">
+              <div>
+                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-sand-400">
+                  Active plans
+                </p>
+                <h2 className="font-display text-2xl font-semibold text-sand-900">
+                  Your trips
+                </h2>
+              </div>
+              <span className="font-mono text-xs text-sand-400">
+                {allTrips.length} total
+              </span>
             </div>
-          ) : (
-            allTrips.map((trip) => (
-              <TripCard
-                key={trip.id}
-                trip={trip as any}
-                canDelete={trip.owner_id === user.id}
-              />
-            ))
-          )}
-        </div>
+
+            <div className="flex flex-col gap-4">
+              {allTrips.length === 0 ? (
+                <div className="border-l-[3px] border-ocean bg-white px-5 py-6 text-sm text-sand-500 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_18px_45px_rgba(29,158,117,0.08)]">
+                  No trips yet. Create a blank trip or ask the builder for a first draft.
+                </div>
+              ) : (
+                allTrips.map((trip) => (
+                  <TripCard
+                    key={trip.id}
+                    trip={trip as any}
+                    canDelete={trip.owner_id === user.id}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+        </section>
       </main>
       <DashboardTurtlePanel />
     </>

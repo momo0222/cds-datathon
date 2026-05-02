@@ -12,64 +12,55 @@ export function TripCard({ trip, canDelete = false }: Props) {
   const memberNames = trip.members?.map(m => m.profile?.full_name || "?") || [];
 
   return (
-    <div className="card overflow-hidden group">
-      {/* Color accent bar */}
-      <div
-        className="h-1.5"
-        style={{ background: `linear-gradient(90deg, ${trip.color}, ${trip.color}aa)` }}
-      />
-
-      <div className="p-6">
-        <div className="flex justify-between items-start gap-4">
-          <Link href={`/trips/${trip.id}`} className="min-w-0 flex-1">
-            <div className="flex gap-4 items-center">
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl"
-                style={{ background: `${trip.color}12` }}
-              >
-                {trip.cover_emoji}
-              </div>
-              <div>
-                <h3 className="font-display text-xl font-semibold text-sand-900 group-hover:text-ocean transition-colors">
-                  {trip.name}
-                </h3>
-                <p className="text-sm text-sand-400">{trip.destination}</p>
+    <div
+      className="group border border-sand-100 bg-white shadow-[0_1px_2px_rgba(24,40,28,0.04),0_16px_36px_rgba(29,158,117,0.07)] transition-all duration-200 hover:-translate-y-0.5 hover:border-sand-200 hover:shadow-[0_2px_6px_rgba(24,40,28,0.06),0_20px_44px_rgba(29,158,117,0.11)]"
+      style={{ borderLeftColor: trip.color, borderLeftWidth: 4 }}
+    >
+      <div className="grid gap-5 p-5 md:grid-cols-[1fr_auto] md:items-start">
+        <Link href={`/trips/${trip.id}`} className="min-w-0">
+          <div className="flex gap-4">
+            <div
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-sm text-3xl"
+              style={{ background: `${trip.color}14` }}
+            >
+              {trip.cover_emoji}
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-display text-2xl font-semibold leading-tight text-sand-900 transition-colors group-hover:text-ocean-dark">
+                {trip.name}
+              </h3>
+              <p className="mt-1 text-sm text-sand-500">{trip.destination}</p>
+              <div className="mt-4 flex items-center gap-3">
+                <div className="flex -space-x-1.5">
+                  {memberNames.slice(0, 4).map((name, i) => (
+                    <div
+                      key={i}
+                      className="flex h-7 w-7 items-center justify-center border-2 border-white text-[10px] font-bold text-white"
+                      style={{ background: trip.color, zIndex: 10 - i }}
+                    >
+                      {initials(name)}
+                    </div>
+                  ))}
+                  {memberNames.length > 4 && (
+                    <div className="flex h-7 w-7 items-center justify-center border-2 border-white bg-sand-200 text-[10px] font-bold text-sand-600">
+                      +{memberNames.length - 4}
+                    </div>
+                  )}
+                </div>
+                <span className="text-xs text-sand-400">
+                  {memberNames.length} traveler{memberNames.length !== 1 ? "s" : ""}
+                </span>
               </div>
             </div>
-          </Link>
-
-          <div className="flex flex-col items-end gap-2">
-            <span className="font-mono text-xs text-sand-400 bg-sand-50 px-3 py-1.5 rounded-lg whitespace-nowrap">
-              {formatDateRange(trip.start_date, trip.end_date)}
-            </span>
-            {canDelete && <DeleteTripButton tripId={trip.id} tripName={trip.name} />}
-          </div>
-        </div>
-
-        <Link href={`/trips/${trip.id}`} className="block">
-          <div className="flex items-center gap-3 mt-4">
-            {/* Member avatars */}
-            <div className="flex -space-x-2">
-              {memberNames.slice(0, 4).map((name, i) => (
-                <div
-                  key={i}
-                  className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white"
-                  style={{ background: trip.color, zIndex: 10 - i }}
-                >
-                  {initials(name)}
-                </div>
-              ))}
-              {memberNames.length > 4 && (
-                <div className="w-7 h-7 rounded-full border-2 border-white bg-sand-200 flex items-center justify-center text-[10px] font-bold text-sand-500">
-                  +{memberNames.length - 4}
-                </div>
-              )}
-            </div>
-            <span className="text-xs text-sand-400">
-              {memberNames.length} traveler{memberNames.length !== 1 ? "s" : ""}
-            </span>
           </div>
         </Link>
+
+        <div className="flex items-center justify-between gap-3 md:flex-col md:items-end">
+          <span className="whitespace-nowrap bg-sand-50 px-3 py-1.5 font-mono text-xs text-sand-500">
+            {formatDateRange(trip.start_date, trip.end_date)}
+          </span>
+          {canDelete && <DeleteTripButton tripId={trip.id} tripName={trip.name} />}
+        </div>
       </div>
     </div>
   );

@@ -24,7 +24,7 @@ const FOOD_PATTERN = /\b(food|eat|eating|meal|breakfast|brunch|lunch|dinner|rest
 const DEFAULT_MESSAGES: ChatMessage[] = [
   {
     role: "assistant",
-    content: "Hi, I am your tiny turtle trip helper. Tell me what changed, and I will turn it into suggestions for review.",
+    content: "Hi, I’m TRVL. Tell me what changed, and I’ll draft itinerary suggestions for you to review.",
   },
 ];
 
@@ -145,7 +145,7 @@ export function TripAgentPanel({ trip, onProposals }: Props) {
           ...current,
           {
             role: "assistant",
-            content: data?.error || "My trip-planning shell is waiting on the agent API. Try again once it is connected.",
+            content: data?.error || "The trip agent is not connected yet.",
           },
         ]);
         setLoading(false);
@@ -157,10 +157,10 @@ export function TripAgentPanel({ trip, onProposals }: Props) {
       setMessages((current) => [
         ...current,
         {
-          role: "assistant",
-          content:
-            data?.message ||
-            `Shell yeah, I drafted ${proposals.length} suggestion${proposals.length === 1 ? "" : "s"} for the review panel.`,
+            role: "assistant",
+            content:
+              data?.message ||
+            `Drafted ${proposals.length} suggestion${proposals.length === 1 ? "" : "s"} for review.`,
         },
       ]);
     } catch {
@@ -168,7 +168,7 @@ export function TripAgentPanel({ trip, onProposals }: Props) {
         ...current,
         {
           role: "assistant",
-          content: "My trip-planning shell is waiting on the agent API. Try again once it is connected.",
+          content: "The trip agent is not connected yet.",
         },
       ]);
     }
@@ -180,7 +180,7 @@ export function TripAgentPanel({ trip, onProposals }: Props) {
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
       {open && (
         <div
-          className="relative overflow-hidden rounded-3xl border border-sand-100 bg-white shadow-2xl shadow-sand-300/40"
+          className="relative overflow-hidden rounded-lg border border-sand-100 bg-white shadow-[0_1px_2px_rgba(24,40,28,0.04),0_22px_55px_rgba(29,158,117,0.16)]"
           style={{
             width: `min(${size.width}px, calc(100vw - 2.5rem))`,
             height: `min(${size.height}px, calc(100vh - 6rem))`,
@@ -195,19 +195,19 @@ export function TripAgentPanel({ trip, onProposals }: Props) {
             onPointerMove={resizePanel}
             onPointerUp={stopResize}
             onPointerCancel={stopResize}
-            className="absolute left-2 top-2 z-10 h-6 w-6 cursor-nwse-resize rounded-md border-l-2 border-t-2 border-sand-300 bg-transparent hover:border-ocean"
+            className="absolute left-2 top-2 z-10 h-6 w-6 cursor-nwse-resize rounded-sm border-l-2 border-t-2 border-sand-300 bg-transparent hover:border-ocean"
           >
             <span className="absolute left-1 top-1 h-3 w-3 border-l border-t border-sand-300" />
           </button>
           <div className="border-b border-sand-100 bg-sand-50 px-4 py-3">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-display text-lg font-bold text-sand-900">Trip Agent</h3>
+                <h3 className="font-display text-lg font-bold text-sand-900">TRVL</h3>
                 <p className="mt-0.5 text-xs text-sand-400">{itinerarySummary}</p>
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="rounded-full px-2 py-1 text-xs font-semibold text-sand-400 hover:bg-white hover:text-sand-700"
+                className="rounded-sm px-2 py-1 text-xs font-semibold text-sand-400 hover:bg-white hover:text-sand-700"
               >
                 Close
               </button>
@@ -223,8 +223,8 @@ export function TripAgentPanel({ trip, onProposals }: Props) {
                 <p
                   className={
                     message.role === "user"
-                      ? "max-w-[85%] rounded-2xl bg-sand-900 px-3 py-2 text-sm text-white"
-                      : "max-w-[85%] rounded-2xl bg-sand-50 px-3 py-2 text-sm text-sand-600"
+                      ? "max-w-[85%] rounded-sm bg-sand-900 px-3 py-2 text-sm text-white"
+                      : "max-w-[85%] rounded-sm bg-sand-50 px-3 py-2 text-sm text-sand-600"
                   }
                 >
                   {message.content}
@@ -241,7 +241,7 @@ export function TripAgentPanel({ trip, onProposals }: Props) {
                   key={command}
                   onClick={() => submitCommand(undefined, command)}
                   disabled={loading}
-                  className="rounded-full bg-sand-50 px-3 py-1.5 text-xs font-semibold text-sand-500 hover:bg-ocean/10 hover:text-ocean disabled:opacity-50"
+                  className="rounded-sm bg-sand-50 px-3 py-1.5 text-xs font-semibold text-sand-500 hover:bg-ocean/10 hover:text-ocean disabled:opacity-50"
                 >
                   {command}
                 </button>
@@ -252,10 +252,10 @@ export function TripAgentPanel({ trip, onProposals }: Props) {
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
                 placeholder="No Italian food, conference 5-7..."
-                className="input min-w-0 flex-1 rounded-xl py-2"
+                className="input min-w-0 flex-1 py-2"
               />
               <button disabled={loading || !input.trim()} className="btn-primary shrink-0 px-4 py-2 disabled:opacity-50">
-                {loading ? "⏳ Thinking..." : "Send"}
+                {loading ? "Thinking..." : "Send"}
               </button>
             </form>
           </div>
@@ -265,7 +265,7 @@ export function TripAgentPanel({ trip, onProposals }: Props) {
       <button
         onClick={() => setOpen((current) => !current)}
         aria-label="Open trip agent"
-        className="relative flex h-16 w-16 items-center justify-center rounded-full bg-moss shadow-xl shadow-sand-300/50 transition-transform hover:scale-105 active:scale-95"
+        className="relative flex h-16 w-16 items-center justify-center rounded-lg bg-moss shadow-[0_8px_18px_rgba(8,80,65,0.22),0_18px_44px_rgba(29,158,117,0.20)] transition-transform hover:-translate-y-0.5 active:translate-y-0"
       >
         <span className={flowerPhase === "chomp" ? "translate-x-0.5 transition-transform duration-150" : "transition-transform duration-300"}>
           <img

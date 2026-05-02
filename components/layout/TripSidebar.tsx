@@ -14,16 +14,19 @@ const TABS = [
 
 export function TripSidebar({ tripId, activeTab }: Props) {
   return (
-    <aside className="hidden md:flex flex-col w-56 border-r border-sand-100 min-h-[calc(100vh-64px)] bg-white/50 p-4 gap-1">
+    <aside className="hidden md:flex min-h-[calc(100vh-80px)] w-56 flex-col gap-2 border-r border-sand-100 bg-white/65 p-4">
+      <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-sand-400">
+        Trip desk
+      </p>
       {TABS.map(tab => (
         <Link
           key={tab.key}
           href={`/trips/${tripId}${tab.path}`}
           className={cn(
-            "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
+            "flex items-center gap-3 rounded-sm border-l-[3px] px-3 py-2.5 text-sm font-medium transition-all duration-150",
             activeTab === tab.key
-              ? "bg-sand-900 text-white shadow-sm"
-              : "text-sand-500 hover:bg-sand-100 hover:text-sand-700"
+              ? "border-coral bg-sand-900 text-white shadow-[0_1px_2px_rgba(24,40,28,0.04),0_14px_32px_rgba(29,158,117,0.12)]"
+              : "border-transparent text-sand-500 hover:border-sand-200 hover:bg-sand-50 hover:text-sand-800"
           )}
         >
           <span className="text-base">{tab.icon}</span>
@@ -44,7 +47,7 @@ export function MobileNav({ tripId, activeTab }: Props) {
             key={tab.key}
             href={`/trips/${tripId}${tab.path}`}
             className={cn(
-              "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-[10px] font-medium transition-colors",
+              "flex flex-col items-center gap-0.5 rounded-sm px-3 py-1.5 text-[10px] font-medium transition-colors",
               activeTab === tab.key ? "text-ocean" : "text-sand-400"
             )}
           >

@@ -305,35 +305,32 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-ocean/10 to-purple-500/10 text-ocean text-sm font-semibold hover:from-ocean/20 hover:to-purple-500/20 transition-all"
+        className="inline-flex items-center gap-2 rounded-sm border border-ocean/20 bg-white px-4 py-2.5 text-sm font-semibold text-ocean shadow-[0_1px_2px_rgba(24,40,28,0.04),0_12px_28px_rgba(29,158,117,0.08)] transition-colors hover:border-ocean/40 hover:bg-ocean/5"
       >
-        <span className="text-base">📧</span>
         Smart Import
       </button>
     );
   }
 
   return (
-    <div className="card p-6 mb-6 animate-slide-up border-2 border-ocean/20">
+    <div className="mb-6 animate-slide-up rounded-lg border border-ocean/15 bg-white p-5 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_18px_44px_rgba(29,158,117,0.09)]">
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h3 className="font-display text-lg font-bold text-sand-900 flex items-center gap-2">
-            <span>📧</span> Smart Import
-          </h3>
+          <h3 className="font-display text-lg font-bold text-sand-900">Smart Import</h3>
           <p className="text-sand-400 text-xs mt-0.5">
-            Add travel confirmations as suggestions before they change the itinerary
+            Pull confirmations into a review queue before they touch the itinerary.
           </p>
         </div>
         <button
           onClick={() => { setOpen(false); setError(null); setResult(null); }}
-          className="text-sand-400 hover:text-sand-600 text-sm"
+          className="rounded-sm px-2 py-1 text-sm text-sand-400 hover:bg-sand-50 hover:text-sand-700"
         >
           Close
         </button>
       </div>
 
       <div className="flex flex-col gap-3">
-        <div className="grid grid-cols-3 gap-2 rounded-2xl bg-sand-50 p-1">
+        <div className="grid grid-cols-3 gap-1 rounded-sm bg-sand-50 p-1">
           {[
             ["paste", "Paste"],
             ["upload", "Upload"],
@@ -348,8 +345,8 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
               }}
               className={
                 activeTab === key
-                  ? "rounded-xl bg-white px-3 py-2 text-xs font-semibold text-sand-900 shadow-sm"
-                  : "rounded-xl px-3 py-2 text-xs font-semibold text-sand-400 hover:text-sand-700"
+                  ? "rounded-sm bg-white px-3 py-2 text-xs font-semibold text-sand-900 shadow-[0_1px_2px_rgba(24,40,28,0.05)]"
+                  : "rounded-sm px-3 py-2 text-xs font-semibold text-sand-400 hover:text-sand-700"
               }
             >
               {label}
@@ -403,7 +400,7 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
 
         {activeTab === "gmail" && (
           <div className="flex flex-col gap-3">
-            <div className="rounded-2xl bg-sand-50 px-4 py-3">
+            <div className="rounded-sm border border-sand-100 bg-sand-50 px-4 py-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p className="text-sm font-semibold text-sand-900">
@@ -412,10 +409,10 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
                   <p className="text-xs text-sand-400">
                     {gmailConnected
                       ? gmailAccounts.map((account) => account.email).filter(Boolean).join(", ") || "Ready to search confirmations"
-                      : "Connect Gmail to search for travel confirmations."}
+                      : "Connect Gmail to find booking confirmations."}
                   </p>
                   {gmailConnected && !gmailHasReadScope && (
-                    <p className="mt-1 text-xs font-medium text-amber-700">
+                    <p className="mt-1 text-xs font-medium text-amber-dark">
                       Gmail is connected, but read permission is missing. Disconnect and reconnect Gmail.
                     </p>
                   )}
@@ -459,10 +456,10 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
             </div>
 
             {gmailMessages.length > 0 && (
-              <div className="rounded-2xl border border-sand-100 bg-white">
+              <div className="rounded-sm border border-sand-100 bg-white">
                 <div className="border-b border-sand-100 px-4 py-3">
-                  <p className="text-sm font-semibold text-sand-900">Found Gmail messages</p>
-                  <p className="text-xs text-sand-400">Select confirmations to import as review suggestions.</p>
+                  <p className="text-sm font-semibold text-sand-900">Gmail matches</p>
+                  <p className="text-xs text-sand-400">Choose the emails to turn into suggestions.</p>
                 </div>
                 <div className="max-h-80 overflow-y-auto">
                   {gmailMessages.map((message) => (
@@ -516,10 +513,10 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
           </div>
         )}
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm font-medium text-amber-dark">{error}</p>}
 
         {result && (
-          <div className="bg-emerald-50 text-emerald-700 rounded-xl px-4 py-3 text-sm font-medium">
+          <div className="rounded-sm bg-ocean/10 px-4 py-3 text-sm font-medium text-ocean-dark">
             Added {result.proposed} suggestion{result.proposed !== 1 ? "s" : ""} to review.
           </div>
         )}
@@ -532,7 +529,7 @@ export function SmartImportPanel({ tripId, currency = "USD", onImported }: Props
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
-                ⏳ Analyzing your emails...
+                Analyzing...
               </span>
             ) : (
               activeTab === "upload" ? "Upload for Review" : "Create Review Suggestions"

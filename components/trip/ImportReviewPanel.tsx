@@ -111,25 +111,25 @@ export function ImportReviewPanel({ tripId, currency = "USD", incomingProposals 
   }
 
   return (
-    <section className="card p-5 mb-6 border-ocean/15">
+    <section className="mb-6 rounded-lg border border-ocean/15 bg-white p-5 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_18px_44px_rgba(29,158,117,0.09)]">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <h3 className="font-display text-lg font-bold text-sand-900">Review Suggestions</h3>
           <p className="text-xs text-sand-400 mt-0.5">
-            Imports and trip-agent changes wait here before they touch the itinerary.
+            Approve only the changes you want added to the itinerary.
           </p>
         </div>
         <span className="chip bg-ocean/10 text-ocean">{pendingCount} pending</span>
       </div>
 
       {message && (
-        <div className="mb-3 rounded-2xl bg-amber-50 px-4 py-3 text-xs font-medium text-amber-700">
+        <div className="mb-3 rounded-sm bg-coral-light px-4 py-3 text-xs font-medium text-amber-dark">
           {message}
         </div>
       )}
 
       {loading ? (
-        <div className="rounded-2xl bg-sand-50 px-4 py-3 text-sm text-sand-400">⏳ Finding travel suggestions...</div>
+        <div className="rounded-sm bg-sand-50 px-4 py-3 text-sm text-sand-400">Finding suggestions...</div>
       ) : (
         <div className="flex flex-col gap-3">
           {proposals.map((proposal) => {
@@ -139,10 +139,10 @@ export function ImportReviewPanel({ tripId, currency = "USD", incomingProposals 
             return (
               <article
                 key={proposal.id}
-                className={cn("rounded-2xl border border-sand-100 p-4", typeCfg.bgClass)}
+                className={cn("rounded-sm border border-sand-100 p-4", typeCfg.bgClass)}
               >
                 <div className="flex gap-3">
-                  <div className="h-10 w-10 shrink-0 rounded-xl bg-white shadow-sm flex items-center justify-center text-lg">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-white text-lg shadow-[0_1px_2px_rgba(24,40,28,0.05)]">
                     {typeCfg.icon}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -167,7 +167,7 @@ export function ImportReviewPanel({ tripId, currency = "USD", incomingProposals 
                     </div>
 
                     {proposal.warnings.length > 0 && (
-                      <div className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
+                      <div className="mt-3 rounded-sm bg-coral-light px-3 py-2 text-xs font-medium text-amber-dark">
                         {proposal.warnings.join(" ")}
                       </div>
                     )}
