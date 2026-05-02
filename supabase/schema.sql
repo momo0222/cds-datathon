@@ -140,6 +140,97 @@ create table public.shared_links (
   created_by uuid references public.profiles(id),
   created_at timestamptz default now()
 );
+-- ============================================
+-- CONNECTED ACCOUNTS (OAUTH)
+-- ============================================
+create table public.connected_accounts (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references public.profiles(id) on delete cascade not null,
+  provider text not null check (provider in ('gmail', 'outlook')),
+  provider_account_id text,
+  email text,
+  access_token_enc text,
+  refresh_token_enc text,
+  expires_at timestamptz,
+  scopes text[] default '{}',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  unique(user_id, provider, email)
+);
+
+-- ============================================
+-- IMPORT JOBS (tracking OAuth/upload/paste/agent imports)
+-- ============================================
+create table public.import_jobs (
+  id uuid default uuid_generate_v4() primary key,
+  trip_id uuid references public.trips(id) on delete cascade not null,
+  user_id uuid references public.profiles(id) on delete set null,
+  source text not null check (source in ('gmail', 'outlook', 'upload', 'paste', 'agent')),
+  status text not null default 'processing'
+    check (status in ('processing', 'needs_review', 'approved', 'failed')),
+  source_ref text,
+  raw_summary text,
+  error text,
+  created_at timestamptz default now(),
+  completed_at timestamptz
+);
+
+-- ============================================
+-- PROPOSED TRIP CHANGES (review queue before itinerary writes)
+-- ============================================
+create table public.proposed_trip_changes (
+  id uuid default uuid_generate_v4() primary key,
+  trip_id uuid references public.trips(id) on delete cascade not null,
+  import_job_id uuid references public.import_jobs(id) on delete set null,
+  created_by uuid references public.profiles(id) on delete set null,
+
+  source text not null check (source in ('gmail', 'outlook', 'upload', 'paste', 'agent')),
+  action text not null default 'create'
+    check (action in ('create', 'update', 'move', 'delete')),
+  target_item_id uuid references public.itinerary_items(id) on delete set null,
+
+  status text not null default 'pending'
+    check (status in ('pending', 'approved', 'rejected')),
+
+  payload jsonb not null,
+  confidence numeric(4,3) default 0,
+  warnings text[] default '{}',
+
+  created_at timestamptz default now(),
+  reviewed_at timestamptz,
+  reviewed_by uuid references public.profiles(id) on delete set null
+);
+
+-- ============================================
+-- USER PREFERENCES (trip agent personalization)
+-- ============================================
+create table public.user_preferences (
+  user_id uuid references public.profiles(id) on delete cascade primary key,
+  pace text default 'balanced'
+    check (pace in ('relaxed', 'balanced', 'packed')),
+  budget_style text default 'balanced'
+    check (budget_style in ('save', 'balanced', 'splurge')),
+  food_notes text,
+  lodging_notes text,
+  mobility_notes text,
+  preferred_start_time time,
+  preferred_end_time time,
+  disliked_activities text[] default '{}',
+  liked_activities text[] default '{}',
+  updated_at timestamptz default now()
+);
+
+-- ============================================
+-- AGENT MESSAGES (trip-specific agent conversation)
+-- ============================================
+create table public.agent_messages (
+  id uuid default uuid_generate_v4() primary key,
+  trip_id uuid references public.trips(id) on delete cascade not null,
+  user_id uuid references public.profiles(id) on delete set null,
+  role text not null check (role in ('user', 'assistant', 'system')),
+  content text not null,
+  created_at timestamptz default now()
+);
 
 -- ============================================
 -- ROW LEVEL SECURITY
@@ -151,6 +242,11 @@ alter table public.days enable row level security;
 alter table public.itinerary_items enable row level security;
 alter table public.expenses enable row level security;
 alter table public.shared_links enable row level security;
+alter table public.import_jobs enable row level security;
+alter table public.proposed_trip_changes enable row level security;
+alter table public.agent_messages enable row level security;
+alter table public.connected_accounts enable row level security;
+alter table public.user_preferences enable row level security;
 
 -- Helper functions to avoid policy recursion (trips <-> trip_members)
 create or replace function public.is_trip_owner(trip uuid, uid uuid)
@@ -253,6 +349,53 @@ create policy "Links: anyone can read by slug" on public.shared_links for select
 create policy "Links: owner can manage" on public.shared_links for all
   using (public.is_trip_owner(trip_id, auth.uid()));
 
+-- Import jobs: trip members can read, editors+ can manage
+drop policy if exists "Import jobs: members can read" on public.import_jobs;
+drop policy if exists "Import jobs: editors can manage" on public.import_jobs;
+create policy "Import jobs: members can read" on public.import_jobs for select
+  using (public.is_trip_owner(trip_id, auth.uid()) or public.is_trip_member(trip_id, auth.uid()));
+create policy "Import jobs: editors can manage" on public.import_jobs for all
+  using (public.can_edit_trip(trip_id, auth.uid()))
+  with check (public.can_edit_trip(trip_id, auth.uid()));
+
+-- Proposed trip changes: trip members can read, editors+ can manage
+drop policy if exists "Proposals: members can read" on public.proposed_trip_changes;
+drop policy if exists "Proposals: editors can manage" on public.proposed_trip_changes;
+create policy "Proposals: members can read"
+on public.proposed_trip_changes for select
+using (
+  public.is_trip_owner(trip_id, auth.uid())
+  or public.is_trip_member(trip_id, auth.uid())
+);
+
+create policy "Proposals: editors can manage"
+on public.proposed_trip_changes for all
+using (public.can_edit_trip(trip_id, auth.uid()))
+with check (public.can_edit_trip(trip_id, auth.uid()));
+
+-- Agent messages: trip members can read, editors+ can manage
+drop policy if exists "Agent messages: members can read" on public.agent_messages;
+drop policy if exists "Agent messages: editors can manage" on public.agent_messages;
+create policy "Agent messages: members can read" on public.agent_messages for select
+  using (public.is_trip_owner(trip_id, auth.uid()) or public.is_trip_member(trip_id, auth.uid()));
+create policy "Agent messages: editors can manage" on public.agent_messages for all
+  using (public.can_edit_trip(trip_id, auth.uid()))
+  with check (public.can_edit_trip(trip_id, auth.uid()));
+
+-- Connected accounts: users can only manage their own provider connections
+drop policy if exists "Connected accounts: owner can manage" on public.connected_accounts;
+create policy "Connected accounts: owner can manage"
+on public.connected_accounts for all
+using (user_id = auth.uid())
+with check (user_id = auth.uid());
+
+-- Preferences: users can only manage their own preference profile
+drop policy if exists "Preferences: owner can manage" on public.user_preferences;
+create policy "Preferences: owner can manage"
+on public.user_preferences for all
+using (user_id = auth.uid())
+with check (user_id = auth.uid());
+
 -- ============================================
 -- INDEXES
 -- ============================================
@@ -263,6 +406,17 @@ create index if not exists idx_items_day on public.itinerary_items(day_id);
 create index if not exists idx_items_trip on public.itinerary_items(trip_id);
 create index if not exists idx_expenses_trip on public.expenses(trip_id);
 create index if not exists idx_shared_links_slug on public.shared_links(slug);
+create index if not exists idx_connected_accounts_user
+on public.connected_accounts(user_id);
+
+create index if not exists idx_import_jobs_trip
+on public.import_jobs(trip_id);
+
+create index if not exists idx_proposals_trip_status
+on public.proposed_trip_changes(trip_id, status);
+
+create index if not exists idx_agent_messages_trip
+on public.agent_messages(trip_id, created_at);
 
 -- ============================================
 -- REAL-TIME (enable for collaborative editing)
