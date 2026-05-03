@@ -11,6 +11,7 @@ import { SmartImportPanel } from "@/components/trip/SmartImportPanel";
 import { ImportReviewPanel } from "@/components/trip/ImportReviewPanel";
 import { TripAgentPanel } from "@/components/trip/TripAgentPanel";
 import { ReviewProposal } from "@/components/trip/proposalDraftStore";
+import { DailyTripMap } from "@/components/map/DailyTripMap";
 
 type TripWithDays = Trip & { days?: (Day & { items?: ItineraryItem[] })[] };
 
@@ -48,21 +49,6 @@ export function ItineraryView({ trip, canEdit = true }: Props) {
 
   return (
     <>
-      <div className="mb-6">
-        {days.length > 0 ? (
-          <DayTabs
-            days={days}
-            activeIndex={Math.min(activeIndex, Math.max(days.length - 1, 0))}
-            onSelect={setActiveIndex}
-            accentColor={trip.color}
-          />
-        ) : (
-          <div className="border-l-[3px] border-ocean bg-white px-5 py-4 text-sm text-sand-500 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_18px_45px_rgba(29,158,117,0.08)]">
-            No days yet.
-          </div>
-        )}
-      </div>
-
       {/* AI Tools */}
       {canEdit && (
         <>
@@ -80,26 +66,45 @@ export function ItineraryView({ trip, canEdit = true }: Props) {
         </>
       )}
 
-      <div className="flex flex-col gap-3 mt-4">
-        {items.length === 0 && activeDay && (
-          <div className="border-l-[3px] border-coral bg-white px-5 py-8 text-center shadow-[0_1px_2px_rgba(24,40,28,0.04),0_18px_45px_rgba(239,159,39,0.08)]">
-            <p className="text-sm text-sand-500">No items yet for this day. Add your first one.</p>
-          </div>
-        )}
+      <div className="mt-4">
+        <div className="mb-6">
+          {days.length > 0 ? (
+            <DayTabs
+              days={days}
+              activeIndex={Math.min(activeIndex, Math.max(days.length - 1, 0))}
+              onSelect={setActiveIndex}
+              accentColor={trip.color}
+            />
+          ) : (
+            <div className="border-l-[3px] border-ocean bg-white px-5 py-4 text-sm text-sand-500 shadow-[0_1px_2px_rgba(24,40,28,0.04),0_18px_45px_rgba(29,158,117,0.08)]">
+              No days yet.
+            </div>
+          )}
+        </div>
 
-        {items.map((item) => (
-          <ItineraryItemCard key={item.id} item={item} onClick={canEdit ? () => setEditingItem(item) : undefined} />
-        ))}
+        <DailyTripMap day={activeDay} />
 
-        {canEdit && (
-          <button
-            onClick={() => setShowAdd(true)}
-            disabled={!activeDay}
-            className="w-full rounded-sm border-2 border-dashed border-sand-200 py-4 text-sm font-medium text-sand-400 transition-colors hover:border-ocean hover:text-ocean disabled:opacity-60"
-          >
-            + Add flight, hotel, activity, or restaurant
-          </button>
-        )}
+        <div className="flex flex-col gap-3">
+          {items.length === 0 && activeDay && (
+            <div className="border-l-[3px] border-coral bg-white px-5 py-8 text-center shadow-[0_1px_2px_rgba(24,40,28,0.04),0_18px_45px_rgba(239,159,39,0.08)]">
+              <p className="text-sm text-sand-500">No items yet for this day. Add your first one.</p>
+            </div>
+          )}
+
+          {items.map((item) => (
+            <ItineraryItemCard key={item.id} item={item} onClick={canEdit ? () => setEditingItem(item) : undefined} />
+          ))}
+
+          {canEdit && (
+            <button
+              onClick={() => setShowAdd(true)}
+              disabled={!activeDay}
+              className="w-full rounded-sm border-2 border-dashed border-sand-200 py-4 text-sm font-medium text-sand-400 transition-colors hover:border-ocean hover:text-ocean disabled:opacity-60"
+            >
+              + Add flight, hotel, activity, or restaurant
+            </button>
+          )}
+        </div>
       </div>
 
       {canEdit && showAdd && activeDay && (
